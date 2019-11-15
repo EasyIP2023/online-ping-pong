@@ -1,0 +1,16 @@
+# Ignore object files
+**/*.o
+
+# Ignore static libraries
+**/*.a
+
+# Ignore shared libraries
+**/*.so
+
+# Ignore all gdb history files
+**/*.gdb_history
+
+build/
+valgrind*
+vgcore.*
+peda*
