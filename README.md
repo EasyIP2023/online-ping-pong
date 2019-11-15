@@ -7,6 +7,14 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 ## Dependencies
 * SDL2
 
-### Installation
+### Installation/Usage
+```
+git clone https://github.com/EasyIP2023/online-ping-pong.git
+mkdir -v build
+meson build
+sudo ninja install -C build
+```
 
-### Testing
+```
+ping-pong-game
+```

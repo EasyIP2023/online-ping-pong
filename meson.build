@@ -27,6 +27,8 @@ pp_inc = include_directories('.','include')
 subdir('src')
 
 executable(
-	'ping-pong-game',
-	link_with: lib_ping_pong
+	'online-ping-pong',
+	link_with: lib_ping_pong,
+	install: true,
+	install_dir: '/usr/bin'
 )
