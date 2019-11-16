@@ -12,7 +12,8 @@ typedef enum pp_log_type {
 } pp_log_type;
 
 void _pp_log_me(pp_log_type type, FILE *stream, const char *fmt, ...);
-const char *_pp_strip_path(const char *filepath);
+char *_pp_strip_path(char *filepath);
+char *pp_file_path(char *filename);
 
 #define pp_log_me(log_type, fmt, ...) \
   _pp_log_me(log_type, stdout, "[%s:%d] " fmt, _pp_strip_path(__FILE__), __LINE__, ##__VA_ARGS__)

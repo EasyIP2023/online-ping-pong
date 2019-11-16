@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <unistd.h>
-#include <limits.h>
+#include <libgen.h>
 
 #include <common.h>
 
@@ -40,9 +40,23 @@ void _pp_log_me(pp_log_type type, FILE *stream, const char *fmt, ...) {
 }
 
 /* Modified version of what's in wlroots */
-const char *_pp_strip_path(const char *filepath) {
+char *_pp_strip_path(char *filepath) {
 	if (*filepath == '.')
 		while (*filepath == '.' || *filepath == '/')
 			filepath++;
 	return filepath;
+}
+
+char *pp_file_path(char *filename) {
+ 	char *result = NULL;
+	char *dir = dirname(filename);
+	char *file = basename(filename);
+
+	result = (char *) calloc(sizeof(char), strlen(dir) + strlen(file) + 1);
+	if (!result) return "";
+
+	strncpy(result, dir, strlen(dir));
+	strncat(result, file, strlen(file));
+
+	return _pp_strip_path(result);
 }
