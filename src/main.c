@@ -13,6 +13,11 @@ int main(void) {
     return EXIT_FAILURE;
   }
 
+  if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+    ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", SDL_GetError());
+    return EXIT_FAILURE;
+  }
+
   err = ppg_otba(&game, 2, PPG_TEXTURE);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");

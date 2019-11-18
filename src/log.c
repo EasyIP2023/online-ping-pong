@@ -47,7 +47,3 @@ const char *_ppg_strip_path(const char *filepath) {
   		filepath++;
   return filepath;
 }
-
-const char *ppg_file_path(const char *filename) {
-  return _ppg_strip_path(filename);
-}
