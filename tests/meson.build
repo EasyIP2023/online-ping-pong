@@ -38,7 +38,7 @@ run_command('cp', '../bmps/background.bmp', '../bmps/image.bmp', test_dir)
 run_command('cp',
   '../imgs/background.png',
   '../imgs/image.png',
-  '../imgs/event_driven.png',
+  '../imgs/sprit.png',
   test_dir
 )
 

@@ -25,7 +25,7 @@ START_TEST(test_user_input) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
-  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN);
   if (!game.win) {
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     freeup_ppg(&game);
@@ -44,25 +44,34 @@ START_TEST(test_user_input) {
 
   uint32_t cur_tex = 0;
   game.texture[cur_tex].name = "event_driven";
-  err = ppg_load_texture(&game, cur_tex, "tests/event_driven.png", PPG_IMG_TEX);
+  err = ppg_load_texture(&game, cur_tex, "tests/sprit.png", PPG_IMG_TEX);
   if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
 
+  int iW = 100, iH = 100;
+  int x = WIDTH / 2 - iW / 2;
+  int y = HEIGHT / 2 - iH / 2;
+
+  SDL_Rect clips[4];
+  for (uint32_t i = 0; i < 4; i++) {
+    clips[i].x = i / 2 * iW;
+    clips[i].y = i % 2 * iH;
+    clips[i].w = iW;
+    clips[i].h = iH;
+  }
+
   /* read user input and handle it */
-  int iW = 0, iH = 0, x = 0, y = 0;
   bool quit = false;
+  int clip = 0;
   while (!quit) {
-    quit = ppg_poll_ev();
+    quit = ppg_poll_ev(&clip);
     /* First clear the renderer */
     SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-    x = WIDTH / 2 - iW / 2;
-    y = HEIGHT / 2 - iH / 2;
-    ppg_render_texture(&game, cur_tex, x, y);
+    ppg_render_texture(&game, cur_tex, x, y, &clips[clip]);
     /* Update the screen */
     SDL_RenderPresent(game.ren);
   }
 
-  IMG_Quit();
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
 } END_TEST;
 

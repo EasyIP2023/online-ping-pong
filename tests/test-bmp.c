@@ -3,8 +3,10 @@
 #include <common.h>
 #include <ppg.h>
 
-#define WIDTH 640
-#define HEIGHT 480
+#define TILE_SIZE 40
+#define WIDTH 1920
+#define HEIGHT 1080
+
 ppg game;
 
 START_TEST(test_bmp) {
@@ -23,7 +25,7 @@ START_TEST(test_bmp) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
-  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN);
   if (game.win == NULL){
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     freeup_ppg(&game);
@@ -50,25 +52,29 @@ START_TEST(test_bmp) {
   err = ppg_load_texture(&game, cur_tex, "tests/image.bmp", PPG_BMP_TEX);
   if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
 
-  int bW = 0, bH = 0;
-  int iW = 0, iH = 0;
-  /* A sleepy rendering loop, wait for 3 seconds and render and present the screen each time */
-  for (int i = 0; i < 3; ++i){
-    /* First clear the renderer */
-    SDL_RenderClear(game.ren);
-    SDL_QueryTexture(game.texture[0].tex, NULL, NULL, &bW, &bH);
-    ppg_render_texture(&game, 0, 0, 0);
-    ppg_render_texture(&game, 0, bW, 0);
-    ppg_render_texture(&game, 0, 0, bH);
-    ppg_render_texture(&game, 0, bW, bH);
+  /* Determine the amount of tiles one needs on screen */
+  int x_tiles = WIDTH / TILE_SIZE;
+  int y_tiles = WIDTH / TILE_SIZE;
+  int x = 0, y = 0;
 
-    SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-    ppg_render_texture(&game, cur_tex, (WIDTH / 2 - iW / 2), (HEIGHT / 2 - iH / 2));
-    /* Update the screen */
-    SDL_RenderPresent(game.ren);
-    /* Take a quick break after all that hard work */
-    SDL_Delay(1000);
+  /* Draw the tiles by calculating their positions */
+  for (int i = 0; i < x_tiles * y_tiles; i++) {
+    x = i % x_tiles;
+    y = i / y_tiles;
+    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, NULL);
   }
+
+  /**
+  * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
+  * the texture's width and height
+  */
+  int iW = 0, iH = 0;
+  SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
+  x = WIDTH / 2 - iW / 2;
+  y = HEIGHT / 2 - iH / 2;
+  ppg_render_texture(&game, cur_tex, x, y, NULL);
+  SDL_RenderPresent(game.ren);
+  SDL_Delay(2000);
 
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
 } END_TEST;

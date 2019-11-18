@@ -46,23 +46,31 @@ bool ppg_load_texture(ppg *game, uint32_t cur_tex, const char *path, texture_typ
 
 /**
 * Draw an SDL_Texture to an SDL_Renderer at position x, y.
-* Whilst preserving the texture's width and height
+* Whilst preserving the texture's width and height. Taking a clip
+* of the texture and if clip has and address it's pointing to
+* use clip's width and height instead of textures.
 * https://www.willusher.io/sdl2%20tutorials/2013/08/17/lesson-2-dont-put-everything-in-main
 */
-void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y) {
+void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y, SDL_Rect *clip) {
 
   /* Setup the destination rectangle to be at the position we want */
   SDL_Rect dst;
   dst.x = x;
   dst.y = y;
 
+  if (clip) {
+    dst.h = clip->h;
+    dst.w = clip->w;
+  } else {
+    SDL_QueryTexture(game->texture[cur_tex].tex, NULL, NULL, &dst.w, &dst.h);
+  }
+
   /* Query the texture to get its width and height to use */
-  SDL_QueryTexture(game->texture[cur_tex].tex, NULL, NULL, &dst.w, &dst.h);
-  SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, NULL, &dst);
+  SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, clip, &dst);
 }
 
 /* Render Texture width, height */
-void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h) {
+void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h, SDL_Rect *clip) {
   SDL_Rect dst;
   dst.x = x;
   dst.y = y;
@@ -70,5 +78,5 @@ void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int
   dst.h = h;
 
   /* Query the texture to get its width and height to use */
-  SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, NULL, &dst);
+  SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, clip, &dst);
 }

@@ -60,13 +60,13 @@ int main(void) {
   	/* First clear the renderer */
   	SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.texture[0].tex, NULL, NULL, &bW, &bH);
-    ppg_render_texture(&game, 0, 0, 0);
-    ppg_render_texture(&game, 0, bW, 0);
-    ppg_render_texture(&game, 0, 0, bH);
-    ppg_render_texture(&game, 0, bW, bH);
+    ppg_render_texture(&game, 0, 0, 0, NULL);
+    ppg_render_texture(&game, 0, bW, 0, NULL);
+    ppg_render_texture(&game, 0, 0, bH, NULL);
+    ppg_render_texture(&game, 0, bW, bH, NULL);
 
     SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-    ppg_render_texture(&game, cur_tex, (WIDTH / 2 - iW / 2), (HEIGHT / 2 - iH / 2));
+    ppg_render_texture(&game, cur_tex, (WIDTH / 2 - iW / 2), (HEIGHT / 2 - iH / 2), NULL);
   	/* Update the screen */
   	SDL_RenderPresent(game.ren);
   	/* Take a quick break after all that hard work */

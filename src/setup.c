@@ -17,6 +17,7 @@ void freeup_ppg(ppg *game) {
     SDL_DestroyRenderer(game->ren);
   if (game->win)
     SDL_DestroyWindow(game->win);
+  IMG_Quit();
   SDL_Quit();
 }
 
@@ -32,7 +33,7 @@ bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
     case PPG_TEXTURE:
       game->texture = (struct texture *) calloc(sizeof(struct texture), size * sizeof(struct texture));
       if (game->texture) { init_texture_data(game, size); return false; }
-      else { ppg_log_me(PPG_DANGER, "[x] calloc calloc failed"); return false; }
+      else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }
       return true;
     default:
       ppg_log_me(PPG_DANGER, "Type not defined");

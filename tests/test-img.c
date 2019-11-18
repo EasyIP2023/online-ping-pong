@@ -5,8 +5,8 @@
 #include <ppg.h>
 
 #define TILE_SIZE 40
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 1920
+#define HEIGHT 1080
 
 ppg game;
 
@@ -31,7 +31,7 @@ START_TEST(test_img) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
-  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN);
   if (!game.win) {
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     freeup_ppg(&game);
@@ -67,7 +67,7 @@ START_TEST(test_img) {
   for (int i = 0; i < x_tiles * y_tiles; i++) {
     x = i % x_tiles;
     y = i / y_tiles;
-    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, NULL);
   }
 
   /**
@@ -78,10 +78,9 @@ START_TEST(test_img) {
   SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
   x = WIDTH / 2 - iW / 2;
   y = HEIGHT / 2 - iH / 2;
-  ppg_render_texture(&game, cur_tex, x, y);
+  ppg_render_texture(&game, cur_tex, x, y, NULL);
   SDL_RenderPresent(game.ren);
   SDL_Delay(2000);
-  IMG_Quit();
 
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
 } END_TEST;
