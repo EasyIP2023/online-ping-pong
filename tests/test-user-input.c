@@ -1,16 +1,15 @@
 #include <check.h>
-
 #include <unistd.h>
+
 #include <common.h>
 #include <ppg.h>
 
-#define TILE_SIZE 40
 #define WIDTH 640
 #define HEIGHT 480
 
 ppg game;
 
-START_TEST(test_img) {
+START_TEST(test_user_input) {
   int err = 0;
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -18,12 +17,7 @@ START_TEST(test_img) {
     ck_abort_msg(NULL);
   }
 
-  if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-    ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", SDL_GetError());
-    ck_abort_msg(NULL);
-  }
-
-  err = ppg_otba(&game, 2, PPG_TEXTURE);
+  err = ppg_otba(&game, 1, PPG_TEXTURE);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");
     ck_abort_msg(NULL);
@@ -40,7 +34,7 @@ START_TEST(test_img) {
   ppg_log_me(PPG_SUCCESS, "SDL Created Window");
 
   game.ren = SDL_CreateRenderer(game.win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  if (!game.ren){
+  if (!game.ren) {
     ppg_log_me(PPG_DANGER, "SDL_CreateRenderer Error: %s", SDL_GetError());
     freeup_ppg(&game);
     ck_abort_msg(NULL);
@@ -49,40 +43,26 @@ START_TEST(test_img) {
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
 
   uint32_t cur_tex = 0;
-  game.texture[cur_tex].name = "background.png";
-  err = ppg_load_texture(&game, cur_tex, "tests/background.png", PPG_IMG_TEX);
-  if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
-  cur_tex++;
-
-  game.texture[cur_tex].name = "image.png";
-  err = ppg_load_texture(&game, cur_tex, "tests/image.png", PPG_IMG_TEX);
+  game.texture[cur_tex].name = "event_driven";
+  err = ppg_load_texture(&game, cur_tex, "tests/event_driven.png", PPG_IMG_TEX);
   if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
 
-  /* Determine the amount of tiles one needs on screen */
-  int x_tiles = WIDTH / TILE_SIZE;
-  int y_tiles = WIDTH / TILE_SIZE;
-  int x = 0, y = 0;
-
-  /* Draw the tiles by calculating their positions */
-  for (int i = 0; i < x_tiles * y_tiles; i++) {
-    x = i % x_tiles;
-    y = i / y_tiles;
-    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+  /* read user input and handle it */
+  int iW = 0, iH = 0, x = 0, y = 0;
+  bool quit = false;
+  while (!quit) {
+    quit = ppg_poll_ev();
+    /* First clear the renderer */
+    SDL_RenderClear(game.ren);
+    SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
+    x = WIDTH / 2 - iW / 2;
+    y = HEIGHT / 2 - iH / 2;
+    ppg_render_texture(&game, cur_tex, x, y);
+    /* Update the screen */
+    SDL_RenderPresent(game.ren);
   }
 
-  /**
-  * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
-  * the texture's width and height
-  */
-  int iW = 0, iH = 0;
-  SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-  x = WIDTH / 2 - iW / 2;
-  y = HEIGHT / 2 - iH / 2;
-  ppg_render_texture(&game, cur_tex, x, y);
-  SDL_RenderPresent(game.ren);
-  SDL_Delay(2000);
   IMG_Quit();
-
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
 } END_TEST;
 
@@ -90,12 +70,12 @@ Suite *main_suite(void) {
   Suite *s = NULL;
   TCase *tc_core = NULL;
 
-  s = suite_create("TestImg");
+  s = suite_create("TestUserInput");
 
   /* Core test case */
   tc_core = tcase_create("Core");
 
-  tcase_add_test(tc_core, test_img);
+  tcase_add_test(tc_core, test_user_input);
   suite_add_tcase(s, tc_core);
 
   return s;
@@ -106,7 +86,7 @@ int main (void) {
   SRunner *sr = NULL;
 
   sr = srunner_create(main_suite());
-  sleep(3);
+  sleep(6);
   srunner_run_all(sr, CK_NORMAL);
   freeup_ppg(&game);
   number_failed = srunner_ntests_failed(sr);

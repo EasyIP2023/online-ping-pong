@@ -5,7 +5,8 @@ threads = dependency('threads')
 
 ping_pong_files = [
 	'log.c', 'setup.c',
-	'screen.c', 'main.c'
+  'screen.c', 'events.c',
+  'main.c'
 ]
 
 lib_ping_pong = static_library(

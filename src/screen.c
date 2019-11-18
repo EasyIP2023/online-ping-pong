@@ -49,7 +49,7 @@ bool ppg_load_texture(ppg *game, uint32_t cur_tex, const char *path, texture_typ
 * Whilst preserving the texture's width and height
 * https://www.willusher.io/sdl2%20tutorials/2013/08/17/lesson-2-dont-put-everything-in-main
 */
-void render_texture(ppg *game, uint32_t cur_tex, int x, int y) {
+void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y) {
 
   /* Setup the destination rectangle to be at the position we want */
   SDL_Rect dst;
@@ -62,7 +62,7 @@ void render_texture(ppg *game, uint32_t cur_tex, int x, int y) {
 }
 
 /* Render Texture width, height */
-void render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h) {
+void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h) {
   SDL_Rect dst;
   dst.x = x;
   dst.y = y;

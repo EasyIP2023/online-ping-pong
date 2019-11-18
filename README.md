@@ -20,5 +20,10 @@ sudo ninja install -C build
 ping-pong-game
 ```
 
+### Running Test
+```
+ninja test -C build/
+```
+
 ### References
 [Will Usher SDL2 Tutorial](https://www.willusher.io/pages/sdl2/)

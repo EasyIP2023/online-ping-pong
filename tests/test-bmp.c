@@ -57,13 +57,13 @@ START_TEST(test_bmp) {
     /* First clear the renderer */
     SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.texture[0].tex, NULL, NULL, &bW, &bH);
-    render_texture(&game, 0, 0, 0);
-    render_texture(&game, 0, bW, 0);
-    render_texture(&game, 0, 0, bH);
-    render_texture(&game, 0, bW, bH);
+    ppg_render_texture(&game, 0, 0, 0);
+    ppg_render_texture(&game, 0, bW, 0);
+    ppg_render_texture(&game, 0, 0, bH);
+    ppg_render_texture(&game, 0, bW, bH);
 
     SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-    render_texture(&game, cur_tex, (WIDTH / 2 - iW / 2), (HEIGHT / 2 - iH / 2));
+    ppg_render_texture(&game, cur_tex, (WIDTH / 2 - iW / 2), (HEIGHT / 2 - iH / 2));
     /* Update the screen */
     SDL_RenderPresent(game.ren);
     /* Take a quick break after all that hard work */
