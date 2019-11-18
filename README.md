@@ -6,6 +6,7 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 
 ## Dependencies
 * SDL2
+* SDL2_image
 
 ### Installation/Usage
 ```

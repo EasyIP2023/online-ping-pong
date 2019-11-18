@@ -15,9 +15,10 @@ cc = meson.get_compiler('c')
 
 add_project_arguments(
   [
-    '-DLUCUR_VERSION="@0@"'.format(meson.project_version()),
-    '-DWLU_DIR_SRC="@0@"'.format(meson.current_source_dir()),
-    '-D_POSIX_C_SOURCE=200809L', '-ggdb'
+    # Added these to preprocessor constants just in case
+    '-DPPG_VERSION="@0@"'.format(meson.project_version()),
+    '-DPPG_DIR_SRC="@0@"'.format(meson.current_source_dir()),
+    '-D_POSIX_C_SOURCE=200809L'
   ],
   language : 'c'
 )
@@ -25,6 +26,7 @@ add_project_arguments(
 pp_inc = include_directories('.','include')
 
 subdir('src')
+subdir('tests')
 
 executable(
   'online-ping-pong',

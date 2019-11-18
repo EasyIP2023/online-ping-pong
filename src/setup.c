@@ -2,11 +2,14 @@
 #include <ppg.h>
 
 void freeup_ppg(ppg *game) {
-  for (uint32_t i = 0; i < game->tsize; i++) {
-    if (game->texture[i].tex) {
-      SDL_DestroyTexture(game->texture[i].tex);
-      game->texture[i].tex = NULL;
+  if (game->texture) {
+    for (uint32_t i = 0; i < game->tsize; i++) {
+      if (game->texture[i].tex) {
+        SDL_DestroyTexture(game->texture[i].tex);
+        game->texture[i].tex = NULL;
+      }
     }
+    FREE(game->texture);
   }
   if (game->surf)
     SDL_FreeSurface(game->surf);
@@ -24,18 +27,15 @@ void init_texture_data(ppg *game, uint32_t size) {
   }
 }
 
-int ppg_otba(ppg *game, uint32_t size, otba_types type) {
-  int ret = EXIT_FAILURE;
+bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
   switch (type) {
     case PPG_TEXTURE:
       game->texture = (struct texture *) calloc(sizeof(struct texture), size * sizeof(struct texture));
-      if (game->texture) { init_texture_data(game, size); ret = EXIT_SUCCESS; }
-      else { ppg_log_me(PPG_DANGER, "[x] calloc calloc failed"); ret = EXIT_FAILURE; }
-      break;
+      if (game->texture) { init_texture_data(game, size); return false; }
+      else { ppg_log_me(PPG_DANGER, "[x] calloc calloc failed"); return false; }
+      return true;
     default:
       ppg_log_me(PPG_DANGER, "Type not defined");
-      ret = EXIT_FAILURE;
-      break;
+      return false;
   }
-  return ret;
 }
