@@ -6,7 +6,7 @@
 #include <types.h>
 
 #define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 935
+#define SCREEN_HEIGHT 1080 // 935
 #define BALL_WIDTH 50
 #define BALL_HEIGHT 50
 #define PLAYER_WIDTH 30
@@ -27,8 +27,8 @@ bool ppg_ball_collision(SDL_Rect *rec1, SDL_Rect *rec2);
 
 /* in src/pong/player.c */ // paddle.img is W: 30px H: 150px
 void ppg_player_init(ppg *game, int x, int y, int w, int h, int y_vel);
-bool ppg_player_move_up(ppg *game);
-bool ppg_player_move_down(ppg *game);
+void ppg_player_move_up(ppg *game);
+void ppg_player_move_down(ppg *game);
 
 void freeup_ppg(ppg *game);
 
