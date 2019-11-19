@@ -60,17 +60,19 @@ int main(void) {
   /* read user input and handle it */
   int key = 0;
   SDL_Event e;
-  while (!ppg_poll_ev(&e, &key)) {
+  bool quit = false;
+  while (!quit) {
+    quit = ppg_poll_ev(&e, &key);
     switch (key) {
       case 4:
-        while (!ppg_poll_ev(&e, &key) && key != KEY_RELEASED) {
+        if (key != KEY_RELEASED) {
           ppg_player_move_down(&game);
           ppg_log_me(PPG_INFO, "Player moved down to position (%d, %d)", game.player.box.x, game.player.box.y);
           ppg_screen_refresh(&game, 1, 0);
         }
         break;
       case 5:
-        while (!ppg_poll_ev(&e, &key) && key != KEY_RELEASED) {
+        if (key != KEY_RELEASED) {
           ppg_player_move_up(&game);
           ppg_log_me(PPG_INFO, "Player moved up to position (%d, %d)", game.player.box.x, game.player.box.y);
           ppg_screen_refresh(&game, 1, 0);

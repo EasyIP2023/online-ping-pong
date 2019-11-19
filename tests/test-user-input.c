@@ -59,7 +59,9 @@ START_TEST(test_user_input) {
   /* read user input and handle it */
   int clip = 0;
   SDL_Event e;
-  while (!ppg_poll_ev(&e, &clip)) {
+  bool quit = false;
+  while (!quit) {
+    quit = ppg_poll_ev(&e, &clip);
     /* First clear the renderer */
     SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
