@@ -5,8 +5,6 @@
 #include <ppg.h>
 
 #define TILE_SIZE 40
-#define WIDTH 1920
-#define HEIGHT 1080
 
 ppg game;
 
@@ -31,7 +29,7 @@ START_TEST(test_img) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
-  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN);
+  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
   if (!game.win) {
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     freeup_ppg(&game);
@@ -59,8 +57,8 @@ START_TEST(test_img) {
   if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
 
   /* Determine the amount of tiles one needs on screen */
-  int x_tiles = WIDTH / TILE_SIZE;
-  int y_tiles = WIDTH / TILE_SIZE;
+  int x_tiles = SCREEN_WIDTH / TILE_SIZE;
+  int y_tiles = SCREEN_WIDTH / TILE_SIZE;
   int x = 0, y = 0;
 
   /* Draw the tiles by calculating their positions */
@@ -76,8 +74,8 @@ START_TEST(test_img) {
   */
   int iW = 0, iH = 0;
   SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-  x = WIDTH / 2 - iW / 2;
-  y = HEIGHT / 2 - iH / 2;
+  x = SCREEN_WIDTH / 2 - iW / 2;
+  y = SCREEN_HEIGHT / 2 - iH / 2;
   ppg_render_texture(&game, cur_tex, x, y, NULL);
   SDL_RenderPresent(game.ren);
   SDL_Delay(2000);

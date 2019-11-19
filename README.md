@@ -13,11 +13,12 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 git clone https://github.com/EasyIP2023/online-ping-pong.git
 mkdir -v build
 meson build
-sudo ninja install -C build
+./build/online-ping-pong
 ```
 
 ```
-ping-pong-game
+sudo ninja install -C build
+online-ping-pong
 ```
 
 ### Running Test
@@ -27,3 +28,4 @@ ninja test -C build/
 
 ### References
 [Will Usher SDL2 Tutorial](https://www.willusher.io/pages/sdl2/)
+[TheCplusPlusGuy simple pong game](https://www.youtube.com/watch?v=cf0vWJn9zZc&list=PL949B30C9A609DEE8&index=20)

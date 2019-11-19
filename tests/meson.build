@@ -34,11 +34,11 @@ ppg_user_input_test = executable('ppg-user-input-test',
   install : false
 )
 
-run_command('cp', '../bmps/background.bmp', '../bmps/image.bmp', test_dir)
+run_command('cp', 'bmps/background.bmp', 'bmps/image.bmp', test_dir)
 run_command('cp',
-  '../imgs/background.png',
-  '../imgs/image.png',
-  '../imgs/sprit.png',
+  'imgs/background.png',
+  'imgs/image.png',
+  'imgs/sprit.png',
   test_dir
 )
 

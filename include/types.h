@@ -17,10 +17,21 @@ typedef struct _ppg {
   SDL_Surface *surf;
 
   uint32_t tsize;
-  struct texture {
+  struct _texture {
     char *name;
     SDL_Texture *tex;
   } *texture;
+
+  struct _ball {
+    int x, y;           /* x, y cordinate */
+    int x_vel, y_vel;   /* x and y velocity */
+    SDL_Rect box;
+  } ball;
+
+  struct _paddle {
+    int y_vel;  /* paddle only has a y velocity */
+    SDL_Rect box;
+  } player;
 } ppg;
 
 #endif

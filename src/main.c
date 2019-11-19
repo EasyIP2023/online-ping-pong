@@ -1,9 +1,6 @@
 #include <common.h>
 #include <ppg.h>
 
-#define WIDTH 640
-#define HEIGHT 480
-
 int main(void) {
   ppg game;
   int err = 0;
@@ -26,8 +23,8 @@ int main(void) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
-  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
-  if (game.win == NULL){
+  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
+  if (!game.win) {
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     freeup_ppg(&game);
     return EXIT_FAILURE;
@@ -35,45 +32,53 @@ int main(void) {
   ppg_log_me(PPG_SUCCESS, "SDL Created Window");
 
   game.ren = SDL_CreateRenderer(game.win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  if (game.ren == NULL){
+  if (!game.ren){
     ppg_log_me(PPG_DANGER, "SDL_CreateRenderer Error: %s", SDL_GetError());
     freeup_ppg(&game);
     return EXIT_FAILURE;
   }
 
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
+  ppg_player_init(&game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
+  // Player 2
+  // ppg_player_init(&game, SCREEN_WIDTH - PLAYER_WIDTH, HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
+  ppg_ball_init(&game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 5, 5);
 
   uint32_t cur_tex = 0;
-  game.texture[cur_tex].name = "background";
-  err = ppg_load_texture(&game, cur_tex, "bmps/background.bmp", PPG_BMP_TEX);
-  if (err) { freeup_ppg(&game); return err; }
+  game.texture[cur_tex].name = "player";
+  err = ppg_load_texture(&game, cur_tex, "imgs/paddle.png", PPG_IMG_TEX);
+  if (err) { freeup_ppg(&game); return EXIT_FAILURE; }
   cur_tex++;
 
-  game.texture[cur_tex].name = "image";
-  err = ppg_load_texture(&game, cur_tex, "bmps/image.bmp", PPG_BMP_TEX);
-  if (err) { freeup_ppg(&game); return err; }
+  game.texture[cur_tex].name = "ball";
+  err = ppg_load_texture(&game, cur_tex, "imgs/ball.png", PPG_IMG_TEX);
+  if (err) { freeup_ppg(&game); return EXIT_FAILURE; }
 
-  int bW = 0, bH = 0;
-  int iW = 0, iH = 0;
-  /* A sleepy rendering loop, wait for 3 seconds and render and present the screen each time */
-  for (int i = 0; i < 3; ++i){
-  	/* First clear the renderer */
-  	SDL_RenderClear(game.ren);
-    SDL_QueryTexture(game.texture[0].tex, NULL, NULL, &bW, &bH);
-    ppg_render_texture(&game, 0, 0, 0, NULL);
-    ppg_render_texture(&game, 0, bW, 0, NULL);
-    ppg_render_texture(&game, 0, 0, bH, NULL);
-    ppg_render_texture(&game, 0, bW, bH, NULL);
+  ppg_log_me(PPG_INFO, "Player start position (%d, %d)", game.player.box.x, game.player.box.y);
+  ppg_screen_refresh(&game, 1, 0);
 
-    SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-    ppg_render_texture(&game, cur_tex, (WIDTH / 2 - iW / 2), (HEIGHT / 2 - iH / 2), NULL);
-  	/* Update the screen */
-  	SDL_RenderPresent(game.ren);
-  	/* Take a quick break after all that hard work */
-  	SDL_Delay(1000);
+  /* read user input and handle it */
+  int key = 0;
+  SDL_Event e;
+  while (!ppg_poll_ev(&e, &key)) {
+    switch (key) {
+      case 4:
+        while (!ppg_poll_ev(&e, &key) && key != KEY_RELEASED) {
+          ppg_player_move_down(&game);
+          ppg_log_me(PPG_INFO, "Player moved down to position (%d, %d)", game.player.box.x, game.player.box.y);
+          ppg_screen_refresh(&game, 1, 0);
+        }
+        break;
+      case 5:
+        while (!ppg_poll_ev(&e, &key) && key != KEY_RELEASED) {
+          ppg_player_move_up(&game);
+          ppg_log_me(PPG_INFO, "Player moved up to position (%d, %d)", game.player.box.x, game.player.box.y);
+          ppg_screen_refresh(&game, 1, 0);
+        }
+        break;
+      default: break;
+    }
   }
-
-  freeup_ppg(&game);
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
   return EXIT_SUCCESS;
 }

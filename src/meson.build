@@ -4,9 +4,8 @@ sdl2_image = dependency('SDL2_image')
 threads = dependency('threads')
 
 ping_pong_files = [
-	'log.c', 'setup.c',
-  'screen.c', 'events.c',
-  'main.c'
+	'log.c', 'setup.c', 'screen.c', 'events.c',
+  'pong/ball.c', 'pong/paddle.c', 'main.c'
 ]
 
 lib_ping_pong = static_library(

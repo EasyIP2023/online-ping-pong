@@ -4,9 +4,6 @@
 #include <common.h>
 #include <ppg.h>
 
-#define WIDTH 640
-#define HEIGHT 480
-
 ppg game;
 
 START_TEST(test_user_input) {
@@ -25,7 +22,7 @@ START_TEST(test_user_input) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
-  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN);
+  game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
   if (!game.win) {
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     freeup_ppg(&game);
@@ -48,8 +45,8 @@ START_TEST(test_user_input) {
   if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
 
   int iW = 100, iH = 100;
-  int x = WIDTH / 2 - iW / 2;
-  int y = HEIGHT / 2 - iH / 2;
+  int x = SCREEN_WIDTH / 2 - iW / 2;
+  int y = SCREEN_HEIGHT / 2 - iH / 2;
 
   SDL_Rect clips[4];
   for (uint32_t i = 0; i < 4; i++) {
@@ -60,14 +57,14 @@ START_TEST(test_user_input) {
   }
 
   /* read user input and handle it */
-  bool quit = false;
   int clip = 0;
-  while (!quit) {
-    quit = ppg_poll_ev(&clip);
+  SDL_Event e;
+  while (!ppg_poll_ev(&e, &clip)) {
     /* First clear the renderer */
     SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
-    ppg_render_texture(&game, cur_tex, x, y, &clips[clip]);
+    /* key press equals to which clip should be drawn */
+    ppg_render_texture(&game, cur_tex, x, y, &clips[clip % 4]);
     /* Update the screen */
     SDL_RenderPresent(game.ren);
   }
