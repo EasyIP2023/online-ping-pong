@@ -14,7 +14,7 @@
 #define KEY_RELEASED 900
 
 void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y, SDL_Rect *clip);
-void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h, SDL_Rect *clip);
+void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h);
 bool ppg_load_texture(ppg *game, uint32_t cur_tex, const char *file, texture_types type);
 void ppg_screen_refresh(ppg *game, uint32_t ball, uint32_t paddle);
 bool ppg_otba(ppg *game, uint32_t size, otba_types type);

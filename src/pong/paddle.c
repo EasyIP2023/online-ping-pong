@@ -15,6 +15,6 @@ void ppg_player_move_up(ppg *game) {
 }
 
 void ppg_player_move_down(ppg *game) {
-  if (game->player.box.y < SCREEN_HEIGHT)
+  if (game->player.box.y < 930)
     game->player.box.y += game->player.y_vel;
 }

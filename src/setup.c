@@ -31,6 +31,7 @@ void init_texture_data(ppg *game, uint32_t size) {
 bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
   switch (type) {
     case PPG_TEXTURE:
+      game->tsize = size;
       game->texture = (struct _texture *) calloc(sizeof(struct _texture), size * sizeof(struct _texture));
       if (game->texture) { init_texture_data(game, size); return false; }
       else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }

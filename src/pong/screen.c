@@ -71,7 +71,7 @@ void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y, SDL_Rect *cli
 }
 
 /* Render Texture width, height */
-void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h, SDL_Rect *clip) {
+void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h) {
   SDL_Rect dst;
   dst.x = x;
   dst.y = y;
@@ -79,12 +79,14 @@ void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int
   dst.h = h;
 
   /* Copy a portion of the texture to the current rendering target. */
-  SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, clip, &dst);
+  SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, NULL, &dst);
 }
 
 void ppg_screen_refresh(ppg *game, uint32_t ball, uint32_t paddle) {
   SDL_RenderClear(game->ren); /* First clear the renderer */
-  ppg_render_texture(game, ball, game->ball.box.x, game->ball.box.y, NULL);
-  ppg_render_texture(game, paddle, game->player.box.x, game->player.box.y, NULL);
+  ppg_render_texture_wh(game, ball, game->ball.box.x, game->ball.box.y,
+                        game->ball.box.w, game->ball.box.h);
+  ppg_render_texture_wh(game, paddle, game->player.box.x, game->player.box.y,
+                        game->player.box.w, game->player.box.h);
   SDL_RenderPresent(game->ren); /* Update the screen */
 }

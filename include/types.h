@@ -23,7 +23,6 @@ typedef struct _ppg {
   } *texture;
 
   struct _ball {
-    int x, y;           /* x, y cordinate */
     int x_vel, y_vel;   /* x and y velocity */
     SDL_Rect box;
   } ball;

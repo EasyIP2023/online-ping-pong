@@ -10,6 +10,11 @@ ppg game;
 
 START_TEST(test_img) {
   int err = 0;
+  game.win = NULL;
+  game.ren = NULL;
+  game.surf = NULL;
+  game.tsize = 0;
+  game.texture = NULL;
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     ppg_log_me(PPG_DANGER, "Could not initialize SDL: %s", SDL_GetError());
@@ -65,7 +70,7 @@ START_TEST(test_img) {
   for (int i = 0; i < x_tiles * y_tiles; i++) {
     x = i % x_tiles;
     y = i / y_tiles;
-    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, NULL);
+    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
   }
 
   /**

@@ -2,8 +2,15 @@
 #include <ppg.h>
 
 int main(void) {
-  ppg game;
   int err = 0;
+
+  /* Fix dangling pointer related issues */
+  ppg game;
+  game.win = NULL;
+  game.ren = NULL;
+  game.surf = NULL;
+  game.tsize = 0;
+  game.texture = NULL;
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     ppg_log_me(PPG_DANGER, "Could not initialize SDL: %s", SDL_GetError());
@@ -60,9 +67,7 @@ int main(void) {
   /* read user input and handle it */
   int key = 0;
   SDL_Event e;
-  bool quit = false;
-  while (!quit) {
-    quit = ppg_poll_ev(&e, &key);
+  while (!ppg_poll_ev(&e, &key)) {
     switch (key) {
       case 4:
         if (key != KEY_RELEASED) {
@@ -81,6 +86,8 @@ int main(void) {
       default: break;
     }
   }
+
+  freeup_ppg(&game);
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
   return EXIT_SUCCESS;
 }

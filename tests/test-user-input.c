@@ -8,6 +8,11 @@ ppg game;
 
 START_TEST(test_user_input) {
   int err = 0;
+  game.win = NULL;
+  game.ren = NULL;
+  game.surf = NULL;
+  game.tsize = 0;
+  game.texture = NULL;
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     ppg_log_me(PPG_DANGER, "Could not initialize SDL: %s", SDL_GetError());
@@ -59,9 +64,7 @@ START_TEST(test_user_input) {
   /* read user input and handle it */
   int clip = 0;
   SDL_Event e;
-  bool quit = false;
-  while (!quit) {
-    quit = ppg_poll_ev(&e, &clip);
+  while (!ppg_poll_ev(&e, &clip)) {
     /* First clear the renderer */
     SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
