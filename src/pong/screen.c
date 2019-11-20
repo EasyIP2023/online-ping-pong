@@ -82,11 +82,18 @@ void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int
   SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, NULL, &dst);
 }
 
-void ppg_screen_refresh(ppg *game, uint32_t ball, uint32_t paddle) {
+void ppg_screen_refresh(ppg *game) {
   SDL_RenderClear(game->ren); /* First clear the renderer */
-  ppg_render_texture_wh(game, ball, game->ball.box.x, game->ball.box.y,
-                        game->ball.box.w, game->ball.box.h);
-  ppg_render_texture_wh(game, paddle, game->player.box.x, game->player.box.y,
-                        game->player.box.w, game->player.box.h);
+  ppg_render_texture_wh(game, 1, game->ball.box.x, game->ball.box.y,
+                        game->ball.box.w, game->ball.box.h); /* Ball */
+  ppg_render_texture_wh(game, 0, game->player.box.x, game->player.box.y,
+                        game->player.box.w, game->player.box.h); /* Paddle */
   SDL_RenderPresent(game->ren); /* Update the screen */
+}
+
+void regulate_fps() {
+  uint8_t start = 0x44;
+  uint16_t od_fps = 1000 / FPS;
+  uint16_t time = SDL_GetTicks() - start;
+  if (od_fps > time) SDL_Delay(od_fps - time);
 }

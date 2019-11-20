@@ -9,11 +9,7 @@ ppg game;
 
 START_TEST(test_bmp) {
   int err = 0;
-  game.win = NULL;
-  game.ren = NULL;
-  game.surf = NULL;
-  game.tsize = 0;
-  game.texture = NULL;
+  ppg_reset_values(&game);
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     ppg_log_me(PPG_DANGER, "Could not initialize SDL: %s", SDL_GetError());
@@ -31,7 +27,7 @@ START_TEST(test_bmp) {
   game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
   if (game.win == NULL){
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
-    freeup_ppg(&game);
+    ppg_freeup_game(&game);
     ck_abort_msg(NULL);
   }
   ppg_log_me(PPG_SUCCESS, "SDL Created Window");
@@ -39,7 +35,7 @@ START_TEST(test_bmp) {
   game.ren = SDL_CreateRenderer(game.win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (game.ren == NULL){
     ppg_log_me(PPG_DANGER, "SDL_CreateRenderer Error: %s", SDL_GetError());
-    freeup_ppg(&game);
+    ppg_freeup_game(&game);
     ck_abort_msg(NULL);
   }
 
@@ -48,12 +44,12 @@ START_TEST(test_bmp) {
   uint32_t cur_tex = 0;
   game.texture[cur_tex].name = "background";
   err = ppg_load_texture(&game, cur_tex, "tests/background.bmp", PPG_BMP_TEX);
-  if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
+  if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
   cur_tex++;
 
   game.texture[cur_tex].name = "image";
   err = ppg_load_texture(&game, cur_tex, "tests/image.bmp", PPG_BMP_TEX);
-  if (err) { freeup_ppg(&game); ck_abort_msg(NULL); }
+  if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
 
   /* Determine the amount of tiles one needs on screen */
   int x_tiles = SCREEN_WIDTH / TILE_SIZE;
@@ -103,7 +99,7 @@ int main (void) {
 
   sr = srunner_create(main_suite());
   srunner_run_all(sr, CK_NORMAL);
-  freeup_ppg(&game);
+  ppg_freeup_game(&game);
   number_failed = srunner_ntests_failed(sr);
   srunner_free(sr);
   sr = NULL;

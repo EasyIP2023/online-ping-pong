@@ -15,6 +15,7 @@ typedef struct _ppg {
   SDL_Window *win;
   SDL_Renderer *ren;
   SDL_Surface *surf;
+  TTF_Font *font;
 
   uint32_t tsize;
   struct _texture {
@@ -29,6 +30,7 @@ typedef struct _ppg {
 
   struct _paddle {
     int y_vel;  /* paddle only has a y velocity */
+    int point;
     SDL_Rect box;
   } player;
 } ppg;

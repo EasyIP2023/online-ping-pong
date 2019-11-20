@@ -1,6 +1,7 @@
 
 sdl2 = dependency('sdl2')
 sdl2_image = dependency('SDL2_image')
+sdl2_ttf = dependency('SDL2_ttf')
 threads = dependency('threads')
 
 pp_files = [
@@ -9,10 +10,11 @@ pp_files = [
 ]
 
 exec_files = ['log.c', 'setup.c', 'main.c']
+deps = [sdl2, sdl2_image, sdl2_ttf, threads]
 
 lib_ping_pong = static_library(
 	'lpp',
 	files(pp_files, exec_files),
 	include_directories: pp_inc,
-	dependencies: [sdl2, sdl2_image, threads]
+	dependencies: deps
 )
