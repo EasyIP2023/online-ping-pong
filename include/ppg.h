@@ -6,7 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <types.h>
 
-#define FPS 30
+#define FPS 60
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
 #define BALL_WIDTH 50
@@ -14,12 +14,15 @@
 #define PLAYER_WIDTH 30
 #define PLAYER_HEIGHT 150
 #define KEY_RELEASED 900
+#define FONT_SIZE 500
 
 void ppg_screen_refresh(ppg *game);
 void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y, SDL_Rect *clip);
-void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h);
+void ppg_render_texture_xywh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h);
+void ppg_render_texture_text(ppg *game, uint32_t cur_tex);
 bool ppg_load_texture(ppg *game, const char *fmt, ...);
 bool ppg_poll_ev(SDL_Event *e, int *key_press);
+void ppg_reg_fps();
 
 /* in src/pong/ball.c, ball.img is W: 35px H: 35px */
 int ppg_is_out(ppg *game);

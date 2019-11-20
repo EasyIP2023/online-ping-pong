@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <time.h>
 #include <log.h>
 
 #define FREE(ptr) if (ptr) { free(ptr); ptr = NULL; }

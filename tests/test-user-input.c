@@ -1,5 +1,4 @@
 #include <check.h>
-#include <unistd.h>
 
 #include <common.h>
 #include <ppg.h>

@@ -15,11 +15,12 @@ typedef enum _otba_types {
 typedef struct _ppg {
   SDL_Window *win;
   SDL_Renderer *ren;
-  SDL_Surface *surf;
 
   uint32_t tsize;
   struct _texture {
+    SDL_Surface *surf;
     SDL_Texture *tex;
+    SDL_Color color;
     TTF_Font *font;
   } *texture;
 

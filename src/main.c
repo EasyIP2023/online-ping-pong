@@ -1,19 +1,20 @@
 #include <common.h>
 #include <ppg.h>
-#include <time.h>
 
 static void game_reset(ppg *game) {
-  ppg_player_init(game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 5);
+  ppg_player_init(game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 6);
   // Player 2
   // ppg_player_init(&game, SCREEN_WIDTH - PLAYER_WIDTH, HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
-  ppg_ball_init(game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 8, 8);
+  ppg_ball_init(game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 9, 9);
 }
 
 int main(void) {
   int err = 0;
   ppg game;
+  game.player.points = 0;
   ppg_reset_values(&game);
 
+  /* Each init called here adds an extra boost in performance */
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     ppg_log_me(PPG_DANGER, "Could not initialize SDL: %s", SDL_GetError());
     return EXIT_FAILURE;
@@ -24,7 +25,7 @@ int main(void) {
     return EXIT_FAILURE;
   }
 
-  if (TTF_Init() == -1) {
+  if (TTF_Init() != 0) {
     ppg_log_me(PPG_DANGER, "TTF_Init failed: %s", SDL_GetError());
     return EXIT_FAILURE;
   }
@@ -61,6 +62,12 @@ int main(void) {
 
   err = ppg_load_texture(&game,"i:p:t", cur_tex, "imgs/ball.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); return EXIT_FAILURE; }
+  cur_tex++;
+
+  SDL_Color temp = {26, 255, 26, 0};
+  memmove(&game.texture[cur_tex].color, &temp, sizeof(SDL_Color));
+  err = ppg_load_texture(&game, "i:p:t:f", cur_tex, "fonts/bankruptcy/Bankruptcy.otf", PPG_FONT_TEX, FONT_SIZE);
+  if (err) { ppg_freeup_game(&game); return EXIT_FAILURE; }
 
   time_t t;
   srand((unsigned) time(&t));
@@ -73,6 +80,7 @@ int main(void) {
   while (!ppg_poll_ev(&e, &key)) {
     ppg_screen_refresh(&game);
     ppg_ball_move(&game, ball_dir);
+    ppg_log_me(PPG_INFO, "Player moved to position: (%d , %d)", game.player.box.x, game.player.box.y);
     switch (key) {
       case 4:
         if (key != KEY_RELEASED) ppg_player_move_down(&game);
@@ -82,7 +90,6 @@ int main(void) {
         break;
       default: break;
     }
-    ppg_log_me(PPG_INFO, "Player moved to position: (%d , %d)", game.player.box.x, game.player.box.y);
     switch (ppg_is_out(&game)) {
       case 1:
         game.player.points++;
@@ -90,11 +97,13 @@ int main(void) {
         game_reset(&game);
         break;
       case 2:
+        game.player.points++;
         ball_dir = rand() % 4;
         game_reset(&game);
         break;
       default: break;
     }
+    // ppg_reg_fps();
   }
 
   ppg_freeup_game(&game);

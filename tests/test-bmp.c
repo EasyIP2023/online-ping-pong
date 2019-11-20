@@ -58,7 +58,7 @@ START_TEST(test_bmp) {
   for (int i = 0; i < x_tiles * y_tiles; i++) {
     x = i % x_tiles;
     y = i / y_tiles;
-    ppg_render_texture_wh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    ppg_render_texture_xywh(&game, 0, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
   }
 
   /**
