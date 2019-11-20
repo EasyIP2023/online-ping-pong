@@ -17,11 +17,11 @@ static bool collision(SDL_Rect rec1, SDL_Rect rec2) {
   return true; /* collision!! */
 }
 
-// static int is_out(ppg *game) {
-//   if (game->ball.box.x < 0) return 1;
-//   if (game->ball.box.x > SCREEN_WIDTH) return 2;
-//   return 0;
-// }
+int ppg_is_out(ppg *game) {
+  if (game->ball.box.x < 0) return 1;
+  if (game->ball.box.x > SCREEN_WIDTH) return 2;
+  return 0;
+}
 
 void ppg_ball_move(ppg *game, uint8_t dir) {
   /* Make it so that when the game starts ball's direction is different */
@@ -49,13 +49,8 @@ void ppg_ball_move(ppg *game, uint8_t dir) {
     game->ball.y_vel = -game->ball.y_vel;
   if ((game->ball.box.y + game->ball.box.h) > SCREEN_HEIGHT)
     game->ball.y_vel = -game->ball.y_vel;
-  if (collision(game->ball.box, game->player.box)) {
-    /* This fixes ball directly over player head issue */
-    if ((game->ball.box.x+3) < (game->player.box.x + game->player.box.w))
-      game->ball.x_vel = -game->ball.x_vel;
-    else
-      game->ball.y_vel = -game->ball.y_vel;
-  }
+  if (collision(game->ball.box, game->player.box))
+    game->ball.x_vel = -game->ball.x_vel;
 }
 
 void ppg_ball_init(ppg *game, int x, int y, int w, int h, int x_vel, int y_vel) {

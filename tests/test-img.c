@@ -48,13 +48,11 @@ START_TEST(test_img) {
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
 
   uint32_t cur_tex = 0;
-  game.texture[cur_tex].name = "background.png";
-  err = ppg_load_texture(&game, cur_tex, "tests/background.png", PPG_IMG_TEX);
+  err = ppg_load_texture(&game, "i:p:t", cur_tex, "tests/background.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
   cur_tex++;
 
-  game.texture[cur_tex].name = "image.png";
-  err = ppg_load_texture(&game, cur_tex, "tests/image.png", PPG_IMG_TEX);
+  err = ppg_load_texture(&game, "i:p:t", cur_tex, "tests/image.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
 
   /* Determine the amount of tiles one needs on screen */

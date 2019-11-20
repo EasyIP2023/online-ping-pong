@@ -43,7 +43,7 @@ void _ppg_log_me(pp_log_type type, FILE *stream, const char *fmt, ...) {
 /* Modified version of what's in wlroots */
 const char *_ppg_strip_path(const char *filepath) {
   if (*filepath == '.')
-  	while (*filepath == '.' || *filepath == '/')
-  		filepath++;
+    while (*filepath == '.' || *filepath == '/')
+      filepath++;
   return filepath;
 }

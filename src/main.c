@@ -2,6 +2,13 @@
 #include <ppg.h>
 #include <time.h>
 
+static void game_reset(ppg *game) {
+  ppg_player_init(game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 5);
+  // Player 2
+  // ppg_player_init(&game, SCREEN_WIDTH - PLAYER_WIDTH, HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
+  ppg_ball_init(game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 8, 8);
+}
+
 int main(void) {
   int err = 0;
   ppg game;
@@ -14,6 +21,11 @@ int main(void) {
 
   if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
     ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", SDL_GetError());
+    return EXIT_FAILURE;
+  }
+
+  if (TTF_Init() == -1) {
+    ppg_log_me(PPG_DANGER, "TTF_Init failed: %s", SDL_GetError());
     return EXIT_FAILURE;
   }
 
@@ -41,37 +53,45 @@ int main(void) {
   }
 
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
-  ppg_player_init(&game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 7);
-  // Player 2
-  // ppg_player_init(&game, SCREEN_WIDTH - PLAYER_WIDTH, HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
-  ppg_ball_init(&game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 10, 10);
 
   uint32_t cur_tex = 0;
-  game.texture[cur_tex].name = "player";
-  err = ppg_load_texture(&game, cur_tex, "imgs/paddle.png", PPG_IMG_TEX);
+  err = ppg_load_texture(&game, "i:p:t", cur_tex, "imgs/paddle.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); return EXIT_FAILURE; }
   cur_tex++;
 
-  game.texture[cur_tex].name = "ball";
-  err = ppg_load_texture(&game, cur_tex, "imgs/ball.png", PPG_IMG_TEX);
+  err = ppg_load_texture(&game,"i:p:t", cur_tex, "imgs/ball.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); return EXIT_FAILURE; }
 
-  // time_t t;
-  // srand((unsigned) time(&t));
-  // uint8_t ball_dir = rand() % 4;
+  time_t t;
+  srand((unsigned) time(&t));
+  uint8_t ball_dir = rand() % 4;
+  game_reset(&game);
 
   /* read user input and handle it */
   int key = 0;
   SDL_Event e;
   while (!ppg_poll_ev(&e, &key)) {
     ppg_screen_refresh(&game);
-    ppg_ball_move(&game, 2);
+    ppg_ball_move(&game, ball_dir);
     switch (key) {
       case 4:
         if (key != KEY_RELEASED) ppg_player_move_down(&game);
         break;
       case 5:
         if (key != KEY_RELEASED) ppg_player_move_up(&game);
+        break;
+      default: break;
+    }
+    ppg_log_me(PPG_INFO, "Player moved to position: (%d , %d)", game.player.box.x, game.player.box.y);
+    switch (ppg_is_out(&game)) {
+      case 1:
+        game.player.points++;
+        ball_dir = rand() % 4;
+        game_reset(&game);
+        break;
+      case 2:
+        ball_dir = rand() % 4;
+        game_reset(&game);
         break;
       default: break;
     }

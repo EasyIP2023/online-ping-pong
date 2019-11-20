@@ -3,7 +3,7 @@
 
 static void init_texture_data(ppg *game, uint32_t size) {
   for (uint32_t i = 0; i < size; i++) {
-    game->texture[i].name = '\0';
+    game->texture[i].font = NULL;
     game->texture[i].tex = NULL;
   }
 }
@@ -12,11 +12,10 @@ void ppg_reset_values(ppg *game) {
   game->win = NULL;
   game->ren = NULL;
   game->surf = NULL;
-  game->font = NULL;
   game->tsize = 0;
   game->texture = NULL;
   game->player.y_vel = 0;
-  game->player.point = 0;
+  game->player.points = 0;
   game->player.box.x = 0;
   game->player.box.y = 0;
   game->player.box.h = 0;
@@ -36,11 +35,13 @@ void ppg_freeup_game(ppg *game) {
         SDL_DestroyTexture(game->texture[i].tex);
         game->texture[i].tex = NULL;
       }
+      if (game->texture[i].font) {
+        TTF_CloseFont(game->texture[i].font);
+        game->texture[i].font = NULL;
+      }
     }
     FREE(game->texture);
   }
-  if (game->font)
-    TTF_CloseFont(game->font);
   if (game->surf)
     SDL_FreeSurface(game->surf);
   if (game->ren)

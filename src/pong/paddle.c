@@ -7,7 +7,7 @@ void ppg_player_init(ppg *game, int x, int y, int w, int h, int y_vel) {
   game->player.box.w = w;
   game->player.box.h = h;
   game->player.y_vel = y_vel;
-  game->player.point = 0;
+  game->player.points = 0;
 }
 
 void ppg_player_move_up(ppg *game) {

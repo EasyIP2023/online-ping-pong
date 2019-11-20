@@ -18,10 +18,11 @@
 void ppg_screen_refresh(ppg *game);
 void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y, SDL_Rect *clip);
 void ppg_render_texture_wh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h);
-bool ppg_load_texture(ppg *game, uint32_t cur_tex, const char *file, texture_types type);
+bool ppg_load_texture(ppg *game, const char *fmt, ...);
 bool ppg_poll_ev(SDL_Event *e, int *key_press);
 
 /* in src/pong/ball.c, ball.img is W: 35px H: 35px */
+int ppg_is_out(ppg *game);
 void ppg_ball_move(ppg *game, uint8_t dir);
 void ppg_ball_init(ppg *game, int x, int y, int w, int h, int x_vel, int y_vel);
 

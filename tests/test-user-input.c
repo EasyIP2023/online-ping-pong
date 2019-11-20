@@ -41,8 +41,7 @@ START_TEST(test_user_input) {
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
 
   uint32_t cur_tex = 0;
-  game.texture[cur_tex].name = "event_driven";
-  err = ppg_load_texture(&game, cur_tex, "tests/sprit.png", PPG_IMG_TEX);
+  err = ppg_load_texture(&game, "i:p:t", cur_tex, "tests/sprit.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
 
   int iW = 100, iH = 100;

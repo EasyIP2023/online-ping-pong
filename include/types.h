@@ -4,7 +4,8 @@
 
 typedef enum _texture_types {
   PPG_BMP_TEX = 0,
-  PPG_IMG_TEX = 1
+  PPG_IMG_TEX = 1,
+  PPG_FONT_TEX = 2
 } texture_types;
 
 typedef enum _otba_types {
@@ -15,12 +16,11 @@ typedef struct _ppg {
   SDL_Window *win;
   SDL_Renderer *ren;
   SDL_Surface *surf;
-  TTF_Font *font;
 
   uint32_t tsize;
   struct _texture {
-    char *name;
     SDL_Texture *tex;
+    TTF_Font *font;
   } *texture;
 
   struct _ball {
@@ -30,7 +30,7 @@ typedef struct _ppg {
 
   struct _paddle {
     int y_vel;  /* paddle only has a y velocity */
-    int point;
+    int points;
     SDL_Rect box;
   } player;
 } ppg;
