@@ -27,23 +27,34 @@ static bool img(ppg *game, uint32_t cur_tex, const char *path) {
   }
   game->texture[cur_tex].tex = IMG_LoadTexture(game->ren, path);
   if (!game->texture[cur_tex].tex) {
-    ppg_log_me(PPG_DANGER, "[x] IMG_LoadTexture failed, Error: %s", SDL_GetError());
+    ppg_log_me(PPG_DANGER, "[x] IMG_LoadTexture failed, Error: %s", IMG_GetError());
     return false;
   }
   return true;
 }
 
+static bool font(ppg *game, uint32_t cur_tex, const char *path, int font_size) {
+  /* Open the font (file, font size) */
+  game->texture[cur_tex].font = TTF_OpenFont(path, font_size);
+  if (!game->texture[cur_tex].font) {
+    ppg_log_me(PPG_DANGER, "[x] TTF_OpenFont failed, Error: %s", TTF_GetError());
+    return false;
+  }
+
+  return true;
+}
+
 /* This is very in efficient, but it'll work for what I need to do */
-static bool update_text(ppg *game, uint32_t cur_tex, const char *msg, SDL_Color color) {
+static bool update_text(ppg *game, uint32_t cur_tex, const char *msg) {
   /**
   * We need to first render to a surface as that's what TTF_RenderText
 	* returns, then load that surface into a texture
   */
-	game->texture[cur_tex].surf = TTF_RenderText_Blended(game->texture[cur_tex].font, msg, color);
-	if (!game->texture[cur_tex].surf){
-    ppg_log_me(PPG_DANGER, "[x] TTF_RenderText_Blended failed, Error: %s", SDL_GetError());
-		return false;
-	}
+  game->texture[cur_tex].surf = TTF_RenderText_Blended(game->texture[cur_tex].font, msg, game->texture[cur_tex].color);
+  if (!game->texture[cur_tex].surf){
+    ppg_log_me(PPG_DANGER, "[x] TTF_RenderText_Blended failed, Error: %s", TTF_GetError());
+    return false;
+  }
 
   game->texture[cur_tex].tex = SDL_CreateTextureFromSurface(game->ren, game->texture[cur_tex].surf);
   if (!game->texture[cur_tex].tex){
@@ -51,7 +62,8 @@ static bool update_text(ppg *game, uint32_t cur_tex, const char *msg, SDL_Color 
     return false;
   }
 
-  SDL_FreeSurface(game->texture[cur_tex].surf); game->texture[cur_tex].surf = NULL;
+  SDL_FreeSurface(game->texture[cur_tex].surf);
+  game->texture[cur_tex].surf = NULL;
 
   return true;
 }
@@ -83,13 +95,7 @@ bool ppg_load_texture(ppg *game, const char *fmt, ...) {
     case PPG_IMG_TEX:
       return !img(game, cur_tex, path);
     case PPG_FONT_TEX:
-      /* Open the font (file, font size) */
-      game->texture[cur_tex].font = TTF_OpenFont(path, font_size);
-      if (!game->texture[cur_tex].font) {
-        ppg_log_me(PPG_DANGER, "[x] TTF_OpenFont failed, Error: %s", SDL_GetError());
-        return false;
-      }
-      return false;
+      return !font(game, cur_tex, path, font_size);
     default:
       ppg_log_me(PPG_DANGER, "[x] failed to pass correct enum member");
       return true;
@@ -142,12 +148,14 @@ void ppg_render_texture_text(ppg *game, uint32_t cur_tex) {
   dst.w = FONT_SIZE;
   dst.h = 166;
 
-  char msg[12];
-  snprintf(msg, 12, "score %d - %d", game->player.points, game->player.points);
-  update_text(game, cur_tex, msg, game->texture[cur_tex].color);
+  char msg[30];
+  snprintf(msg, 30, "score %d - %d", game->player.points, game->player.points);
+  update_text(game, cur_tex, msg);
+
   /* Copy a portion of the texture to the current rendering target. */
   SDL_RenderCopy(game->ren, game->texture[cur_tex].tex, NULL, &dst);
   SDL_DestroyTexture(game->texture[cur_tex].tex);
+  game->texture[cur_tex].tex = NULL;
 }
 
 void ppg_reg_fps() {

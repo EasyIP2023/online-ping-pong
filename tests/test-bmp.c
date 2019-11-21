@@ -19,6 +19,7 @@ START_TEST(test_bmp) {
   err = ppg_otba(&game, 2, PPG_TEXTURE);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");
+    ppg_freeup_game(&game);
     ck_abort_msg(NULL);
   }
 

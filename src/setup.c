@@ -27,6 +27,8 @@ void ppg_reset_values(ppg *game) {
   game->ball.box.y = 0;
   game->ball.box.h = 0;
   game->ball.box.w = 0;
+  game->music = NULL;
+  game->chunk = NULL;
 }
 
 void ppg_freeup_game(ppg *game) {
@@ -51,6 +53,12 @@ void ppg_freeup_game(ppg *game) {
     SDL_DestroyRenderer(game->ren);
   if (game->win)
     SDL_DestroyWindow(game->win);
+  if (game->music)
+    Mix_FreeMusic(game->music);
+  if (game->chunk)
+    Mix_FreeChunk(game->chunk);
+  Mix_CloseAudio();
+  TTF_Quit();
   IMG_Quit();
   SDL_Quit();
   ppg_reset_values(game);

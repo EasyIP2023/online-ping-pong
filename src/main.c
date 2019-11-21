@@ -5,7 +5,7 @@ static void game_reset(ppg *game) {
   ppg_player_init(game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 6);
   // Player 2
   // ppg_player_init(&game, SCREEN_WIDTH - PLAYER_WIDTH, HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
-  ppg_ball_init(game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 9, 9);
+  ppg_ball_init(game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 12, 12);
 }
 
 int main(void) {
@@ -21,18 +21,21 @@ int main(void) {
   }
 
   if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-    ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", SDL_GetError());
+    ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", IMG_GetError());
+    ppg_freeup_game(&game);
     return EXIT_FAILURE;
   }
 
   if (TTF_Init() != 0) {
-    ppg_log_me(PPG_DANGER, "TTF_Init failed: %s", SDL_GetError());
+    ppg_log_me(PPG_DANGER, "TTF_Init failed: %s", TTF_GetError());
+    ppg_freeup_game(&game);
     return EXIT_FAILURE;
   }
 
   err = ppg_otba(&game, 3, PPG_TEXTURE);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");
+    ppg_freeup_game(&game);
     return EXIT_FAILURE;
   }
 
@@ -73,6 +76,7 @@ int main(void) {
   srand((unsigned) time(&t));
   uint8_t ball_dir = rand() % 4;
   game_reset(&game);
+  ppg_load_music(&game, "music/evolution.mp3", NULL);
 
   /* read user input and handle it */
   int key = 0;
@@ -80,7 +84,6 @@ int main(void) {
   while (!ppg_poll_ev(&e, &key)) {
     ppg_screen_refresh(&game);
     ppg_ball_move(&game, ball_dir);
-    ppg_log_me(PPG_INFO, "Player moved to position: (%d , %d)", game.player.box.x, game.player.box.y);
     switch (key) {
       case 4:
         if (key != KEY_RELEASED) ppg_player_move_down(&game);

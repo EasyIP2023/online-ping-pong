@@ -17,13 +17,15 @@ START_TEST(test_img) {
   }
 
   if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-    ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", SDL_GetError());
+    ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", IMG_GetError());
+    ppg_freeup_game(&game);
     ck_abort_msg(NULL);
   }
 
   err = ppg_otba(&game, 2, PPG_TEXTURE);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");
+    ppg_freeup_game(&game);
     ck_abort_msg(NULL);
   }
 

@@ -34,6 +34,9 @@ typedef struct _ppg {
     int points;
     SDL_Rect box;
   } player;
+
+  Mix_Music *music;
+  Mix_Chunk *chunk;
 } ppg;
 
 #endif
