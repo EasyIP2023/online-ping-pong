@@ -1,12 +1,19 @@
 #include <common.h>
 #include <ppg.h>
 
-static void init_texture_data(ppg *game, uint32_t size) {
-  for (uint32_t i = 0; i < size; i++) {
+static void init_texture_data(ppg *game) {
+  for (uint32_t i = 0; i < game->tsize; i++) {
     game->texture[i].surf = NULL;
     game->texture[i].tex = NULL;
     game->texture[i].font = NULL;
     memset(&game->texture[i].color, 0, sizeof(SDL_Color));
+  }
+}
+
+static void init_audio_data(ppg *game) {
+  for (uint32_t i = 0; i < game->asize; i++) {
+    game->audio[i].music = NULL;
+    game->audio[i].effect = NULL;
   }
 }
 
@@ -27,8 +34,8 @@ void ppg_reset_values(ppg *game) {
   game->ball.box.y = 0;
   game->ball.box.h = 0;
   game->ball.box.w = 0;
-  game->music = NULL;
-  game->chunk = NULL;
+  game->asize = 0;
+  game->audio = NULL;
 }
 
 void ppg_freeup_game(ppg *game) {
@@ -49,14 +56,23 @@ void ppg_freeup_game(ppg *game) {
     }
     FREE(game->texture);
   }
+  if (game->audio) {
+    for (uint32_t i = 0; i < game->asize; i++) {
+      if (game->audio[i].music) {
+        Mix_FreeMusic(game->audio[i].music);
+        game->audio[i].music = NULL;
+      }
+      if (game->audio[i].effect) {
+        Mix_FreeChunk(game->audio[i].effect);
+        game->audio[i].effect = NULL;
+      }
+    }
+    FREE(game->audio);
+  }
   if (game->ren)
     SDL_DestroyRenderer(game->ren);
   if (game->win)
     SDL_DestroyWindow(game->win);
-  if (game->music)
-    Mix_FreeMusic(game->music);
-  if (game->chunk)
-    Mix_FreeChunk(game->chunk);
   Mix_CloseAudio();
   TTF_Quit();
   IMG_Quit();
@@ -69,7 +85,13 @@ bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
     case PPG_TEXTURE:
       game->tsize = size;
       game->texture = (struct _texture *) calloc(sizeof(struct _texture), size * sizeof(struct _texture));
-      if (game->texture) { init_texture_data(game, size); return false; }
+      if (game->texture) { init_texture_data(game); return false; }
+      else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }
+      return true;
+    case PPG_AUDIO:
+      game->asize = size;
+      game->audio = (struct _audio *) calloc(sizeof(struct _audio), size * sizeof(struct _audio));
+      if (game->audio) { init_audio_data(game); return false; }
       else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }
       return true;
     default:

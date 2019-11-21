@@ -37,7 +37,9 @@ void ppg_player_move_up(ppg *game);
 void ppg_player_move_down(ppg *game);
 
 /* in src/pong/audio.c */
-bool ppg_load_music(ppg *game, const char *music, const char *effect);
+bool ppg_load_audio(ppg *game, uint32_t cur_a, const char *audio, audio_types type);
+bool ppg_play_music(ppg *game, uint32_t cur_a, int loop);
+bool ppg_play_effect(ppg *game, uint32_t cur_a, int channel, int loop);
 
 /* in src/setup.c */
 void ppg_freeup_game(ppg *game);

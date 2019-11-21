@@ -39,6 +39,13 @@ int main(void) {
     return EXIT_FAILURE;
   }
 
+  err = ppg_otba(&game, 2, PPG_AUDIO);
+  if (err) {
+    ppg_log_me(PPG_DANGER, "Failed to allocate space");
+    ppg_freeup_game(&game);
+    return EXIT_FAILURE;
+  }
+
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
 
   game.win = SDL_CreateWindow("Ping Pong Game", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
@@ -76,7 +83,10 @@ int main(void) {
   srand((unsigned) time(&t));
   uint8_t ball_dir = rand() % 4;
   game_reset(&game);
-  ppg_load_music(&game, "music/evolution.mp3", NULL);
+
+  ppg_load_audio(&game, 0, "music/evolution.mp3", PPG_MUSIC);
+  ppg_load_audio(&game, 1, "music/mario_jump.wav", PPG_EFFECT);
+  ppg_play_music(&game, 0, -1);
 
   /* read user input and handle it */
   int key = 0;

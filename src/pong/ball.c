@@ -24,7 +24,7 @@ int ppg_is_out(ppg *game) {
 }
 
 void ppg_ball_move(ppg *game, uint8_t dir) {
-  /* Make it so that when the game starts ball's direction is different */
+  /* Make it so that when the game starts ball's velocity is different */
   switch (dir) {
     case 0:
       game->ball.box.x += game->ball.x_vel;
@@ -49,8 +49,10 @@ void ppg_ball_move(ppg *game, uint8_t dir) {
     game->ball.y_vel = -game->ball.y_vel;
   if ((game->ball.box.y + game->ball.box.h) > SCREEN_HEIGHT)
     game->ball.y_vel = -game->ball.y_vel;
-  if (collision(game->ball.box, game->player.box))
+  if (collision(game->ball.box, game->player.box)) {
+    ppg_play_effect(game, 1, -1, 0);
     game->ball.x_vel = -game->ball.x_vel;
+  }
 }
 
 void ppg_ball_init(ppg *game, int x, int y, int w, int h, int x_vel, int y_vel) {
