@@ -49,7 +49,7 @@ static bool ppg_render_texture_text(ppg *game, uint32_t cur_di, SDL_Rect *dst, c
   bool ret = false;
   /**
   * We need to first render to a surface as that's what TTF_RenderText
-	* returns, then load that surface into a texture
+  * returns, then load that surface into a texture
   */
   game->display_items[cur_di].surf = TTF_RenderText_Blended(game->display_items[cur_di].font, msg, game->display_items[cur_di].color);
   if (!game->display_items[cur_di].surf){

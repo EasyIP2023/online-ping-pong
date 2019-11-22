@@ -29,7 +29,6 @@ static bool load_display_items(ppg *game) {
   /* Load menu font */
   err = ppg_load_display_item(game, "i:p:t:f", cur_di, "fonts/bankruptcy/Bankruptcy.otf", PPG_FONT_TEX, FONT_SIZE);
   if (err) return err;
-  cur_di++;
 
   return err;
 }
@@ -121,12 +120,12 @@ int main(void) {
   /* read user input and handle it */
   int key = 0;
   SDL_Event e;
-  bool game_menu = false, game_over = false, music_playing = false;
+  bool game_menu = false, game_over = true, music_playing = false;
   while (!ppg_poll_ev(&e, &key)) {
     if (key == EXIT_GAME) goto exit_game;
 
     /* Game Menu Crazy If Statement Checks */
-    if (!game_menu && !game_over) {
+    if (!game_menu && game_over) {
       if (!music_playing) {
         if (!ppg_play_music(&game, 1, -1)) {
           ppg_freeup_game(&game);
@@ -136,13 +135,13 @@ int main(void) {
       }
       game_menu = ppg_show_menu(&game, &e, &key);
       if (key == PLAY_GAME) {
-        game_over = true;
+        game_over = false;
         music_playing = false;
       }
     }
 
     /* Actual game */
-    if (game_over) {
+    if (!game_over) {
       if (!music_playing) {
         if (!ppg_play_music(&game, 0, -1)) {
           ppg_freeup_game(&game);
@@ -175,7 +174,8 @@ int main(void) {
         default: break;
       }
       if (game.player.points == 10) {
-        game_over = false;
+        game.player.points = 0;
+        game_over = true;
         music_playing = false;
       }
     }
