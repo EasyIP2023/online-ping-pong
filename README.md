@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](#license)
 
-This was hackishly created. Runtime O(n)
+This was hackishly created (If statement checks have no similarity). **Runtime**: O(n)
 
 Audio From: https://www.bensound.com
 

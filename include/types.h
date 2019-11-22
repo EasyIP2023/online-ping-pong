@@ -2,6 +2,19 @@
 #ifndef PPG_TYPES_H
 #define PPG_TYPES_H
 
+#define FPS 60
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
+#define BALL_WIDTH 50
+#define BALL_HEIGHT 50
+#define PLAYER_WIDTH 30
+#define PLAYER_HEIGHT 150
+#define KEY_RELEASED 900
+#define FONT_SIZE 500
+#define MOUSE_BUTTON_PRESSED 645
+#define EXIT_GAME 123
+#define PLAY_GAME 345
+
 typedef enum _audio_types {
   PPG_MUSIC = 0,
   PPG_EFFECT = 1
@@ -23,12 +36,12 @@ typedef struct _ppg {
   SDL_Renderer *ren;
 
   uint32_t tsize;
-  struct _texture {
+  struct _display_item {
     SDL_Surface *surf;
     SDL_Texture *tex;
     SDL_Color color;
     TTF_Font *font;
-  } *texture;
+  } *display_items;
 
   struct _ball {
     int x_vel, y_vel;   /* x and y velocity */

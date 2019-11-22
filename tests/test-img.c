@@ -48,12 +48,12 @@ START_TEST(test_img) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
 
-  uint32_t cur_tex = 0;
-  err = ppg_load_texture(&game, "i:p:t", cur_tex, "tests/background.png", PPG_IMG_TEX);
+  uint32_t cur_di = 0;
+  err = ppg_load_display_item(&game, "i:p:t", cur_di, "tests/background.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
-  cur_tex++;
+  cur_di++;
 
-  err = ppg_load_texture(&game, "i:p:t", cur_tex, "tests/image.png", PPG_IMG_TEX);
+  err = ppg_load_display_item(&game, "i:p:t", cur_di, "tests/image.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
 
   /* Determine the amount of tiles one needs on screen */
@@ -73,10 +73,10 @@ START_TEST(test_img) {
   * the texture's width and height
   */
   int iW = 0, iH = 0;
-  SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
+  SDL_QueryTexture(game.display_items[cur_di].tex, NULL, NULL, &iW, &iH);
   x = SCREEN_WIDTH / 2 - iW / 2;
   y = SCREEN_HEIGHT / 2 - iH / 2;
-  ppg_render_texture(&game, cur_tex, x, y, NULL);
+  ppg_render_texture(&game, cur_di, x, y, NULL);
   SDL_RenderPresent(game.ren);
   SDL_Delay(2000);
 

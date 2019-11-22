@@ -50,7 +50,7 @@ void ppg_ball_move(ppg *game, uint8_t dir) {
   if ((game->ball.box.y + game->ball.box.h) > SCREEN_HEIGHT)
     game->ball.y_vel = -game->ball.y_vel;
   if (collision(game->ball.box, game->player.box)) {
-    ppg_play_effect(game, 1, -1, 0);
+    ppg_play_effect(game, 2, -1, 0);
     game->ball.x_vel = -game->ball.x_vel;
   }
 }

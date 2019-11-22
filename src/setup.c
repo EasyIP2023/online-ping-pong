@@ -2,11 +2,12 @@
 #include <ppg.h>
 
 static void init_texture_data(ppg *game) {
+  SDL_Color color = {0, 0, 0, 0};
   for (uint32_t i = 0; i < game->tsize; i++) {
-    game->texture[i].surf = NULL;
-    game->texture[i].tex = NULL;
-    game->texture[i].font = NULL;
-    memset(&game->texture[i].color, 0, sizeof(SDL_Color));
+    game->display_items[i].surf = NULL;
+    game->display_items[i].tex = NULL;
+    game->display_items[i].font = NULL;
+    ppg_copy_sdl_color(game, i, color);
   }
 }
 
@@ -21,7 +22,7 @@ void ppg_reset_values(ppg *game) {
   game->win = NULL;
   game->ren = NULL;
   game->tsize = 0;
-  game->texture = NULL;
+  game->display_items = NULL;
   game->player.y_vel = 0;
   game->player.points = 0;
   game->player.box.x = 0;
@@ -39,22 +40,22 @@ void ppg_reset_values(ppg *game) {
 }
 
 void ppg_freeup_game(ppg *game) {
-  if (game->texture) {
+  if (game->display_items) {
     for (uint32_t i = 0; i < game->tsize; i++) {
-      if (game->texture[i].tex) {
-        SDL_DestroyTexture(game->texture[i].tex);
-        game->texture[i].tex = NULL;
+      if (game->display_items[i].tex) {
+        SDL_DestroyTexture(game->display_items[i].tex);
+        game->display_items[i].tex = NULL;
       }
-      if (game->texture[i].font) {
-        TTF_CloseFont(game->texture[i].font);
-        game->texture[i].font = NULL;
+      if (game->display_items[i].font) {
+        TTF_CloseFont(game->display_items[i].font);
+        game->display_items[i].font = NULL;
       }
-      if (game->texture[i].surf) {
-        SDL_FreeSurface(game->texture[i].surf);
-        game->texture[i].surf = NULL;
+      if (game->display_items[i].surf) {
+        SDL_FreeSurface(game->display_items[i].surf);
+        game->display_items[i].surf = NULL;
       }
     }
-    FREE(game->texture);
+    FREE(game->display_items);
   }
   if (game->audio) {
     for (uint32_t i = 0; i < game->asize; i++) {
@@ -84,8 +85,8 @@ bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
   switch (type) {
     case PPG_TEXTURE:
       game->tsize = size;
-      game->texture = (struct _texture *) calloc(sizeof(struct _texture), size * sizeof(struct _texture));
-      if (game->texture) { init_texture_data(game); return false; }
+      game->display_items = (struct _display_item *) calloc(sizeof(struct _display_item), size * sizeof(struct _display_item));
+      if (game->display_items) { init_texture_data(game); return false; }
       else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }
       return true;
     case PPG_AUDIO:

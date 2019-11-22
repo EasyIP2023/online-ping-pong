@@ -7,23 +7,14 @@
 #include <SDL2/SDL_mixer.h>
 #include <types.h>
 
-#define FPS 60
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
-#define BALL_WIDTH 50
-#define BALL_HEIGHT 50
-#define PLAYER_WIDTH 30
-#define PLAYER_HEIGHT 150
-#define KEY_RELEASED 900
-#define FONT_SIZE 500
-
 /* in src/pong/screen.c */
-void ppg_screen_refresh(ppg *game);
-void ppg_render_texture(ppg *game, uint32_t cur_tex, int x, int y, SDL_Rect *clip);
-void ppg_render_texture_xywh(ppg *game, uint32_t cur_tex, int x, int y, int w, int h);
-void ppg_render_texture_text(ppg *game, uint32_t cur_tex);
-bool ppg_load_texture(ppg *game, const char *fmt, ...);
-bool ppg_poll_ev(SDL_Event *e, int *key_press);
+bool ppg_screen_refresh(ppg *game);
+void ppg_render_texture(ppg *game, uint32_t cur_di, int x, int y, SDL_Rect *clip);
+bool ppg_render_texture_xywh(ppg *game, uint32_t cur_di, int x, int y, int w, int h);
+void ppg_copy_sdl_color(ppg *game, uint32_t cur_di, SDL_Color color);
+bool ppg_load_display_item(ppg *game, const char *fmt, ...);
+bool ppg_poll_ev(SDL_Event *e, int *key);
+bool ppg_show_menu(ppg *game, SDL_Event *e, int *key);
 void ppg_reg_fps();
 
 /* in src/pong/ball.c, ball.img is W: 35px H: 35px */

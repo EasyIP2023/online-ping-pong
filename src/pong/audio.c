@@ -15,10 +15,7 @@ bool ppg_load_audio(ppg *game, uint32_t cur_a, const char *audio, audio_types ty
 
   switch (type) {
     case PPG_MUSIC:
-      /**
-      * Load music file to use.
-      * This can load WAVE, MOD, MIDI, OGG, MP3, FLAC
-      */
+      /* Load music file to use. This can load WAVE, MOD, MIDI, OGG, MP3, FLAC */
       game->audio[cur_a].music = Mix_LoadMUS(audio);
       if (!game->audio[cur_a].music) {
         ppg_log_me(PPG_DANGER, "[x] Mix_LoadMUS failed: %s", Mix_GetError());

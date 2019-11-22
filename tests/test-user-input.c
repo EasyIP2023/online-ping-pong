@@ -40,8 +40,8 @@ START_TEST(test_user_input) {
 
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
 
-  uint32_t cur_tex = 0;
-  err = ppg_load_texture(&game, "i:p:t", cur_tex, "tests/sprit.png", PPG_IMG_TEX);
+  uint32_t cur_di = 0;
+  err = ppg_load_display_item(&game, "i:p:t", cur_di, "tests/sprit.png", PPG_IMG_TEX);
   if (err) { ppg_freeup_game(&game); ck_abort_msg(NULL); }
 
   int iW = 100, iH = 100;
@@ -62,9 +62,9 @@ START_TEST(test_user_input) {
   while (!ppg_poll_ev(&e, &clip)) {
     /* First clear the renderer */
     SDL_RenderClear(game.ren);
-    SDL_QueryTexture(game.texture[cur_tex].tex, NULL, NULL, &iW, &iH);
+    SDL_QueryTexture(game.display_items[cur_di].tex, NULL, NULL, &iW, &iH);
     /* key press equals to which clip should be drawn */
-    ppg_render_texture(&game, cur_tex, x, y, &clips[clip % 4]);
+    ppg_render_texture(&game, cur_di, x, y, &clips[clip % 4]);
     /* Update the screen */
     SDL_RenderPresent(game.ren);
   }
