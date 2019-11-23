@@ -30,7 +30,7 @@ subdir('tests')
 
 executable(
   'online-ping-pong',
-  link_with: lib_ping_pong,
+  link_with: [lib_pp, lib_pp_exec],
   install: true,
   install_dir: '/usr/bin'
 )

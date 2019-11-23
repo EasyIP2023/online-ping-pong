@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <libgen.h>
 #include <stdint.h>
 

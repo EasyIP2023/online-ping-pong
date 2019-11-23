@@ -1,4 +1,3 @@
-
 #ifndef PPG_TYPES_H
 #define PPG_TYPES_H
 
@@ -14,6 +13,7 @@
 #define MOUSE_BUTTON_PRESSED 645
 #define EXIT_GAME 123
 #define PLAY_GAME 345
+#define RET_TO_MENU 657
 
 typedef enum _audio_types {
   PPG_MUSIC = 0,

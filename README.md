@@ -8,6 +8,13 @@ Audio From: https://www.bensound.com
 
 This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API.
 
+Online ping pong makes full utilization of:
+* SDL2 - For graphics
+* TCP sockets - For connection oriented socket streaming. Need to make sure a game is established.
+* epoll - To better manage an array of open file descriptors to see which one is ready for read/write operations.
+* non-blocking I/0 - all FD's are set to non-blocking mode, so that file descriptors don't have to wait for unix/linux system calls like [read(2)](https://linux.die.net/man/2/read) to finish.
+* Thread pool - Queue's up task for threads to execute. Number of threads is equal to the same number of CPU Cores - 1. Helps a little with context switching.
+
 ## Dependencies
 * SDL2
 * SDL2_image

@@ -123,6 +123,7 @@ int main(void) {
   bool game_menu = false, game_over = true, music_playing = false;
   while (!ppg_poll_ev(&e, &key)) {
     if (key == EXIT_GAME) goto exit_game;
+    if (key == RET_TO_MENU) { game_over = true; music_playing = false; }
 
     /* Game Menu Crazy If Statement Checks */
     if (!game_menu && game_over) {

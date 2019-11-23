@@ -13,7 +13,7 @@ bool ppg_poll_ev(SDL_Event *e, int *key) {
         case SDLK_d: *key = 3; break;
         case SDLK_DOWN: *key = 4; break;
         case SDLK_UP: *key = 5; break;
-        case SDLK_ESCAPE: return true;
+        case SDLK_ESCAPE: *key = RET_TO_MENU; break;
         default: return false;
       }
       return false;

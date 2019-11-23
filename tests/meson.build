@@ -9,7 +9,7 @@ ppg_bmp_test = executable('ppg-bmp-test',
   'test-bmp.c',
   include_directories : pp_inc,
   dependencies : [check],
-  link_with : lib_ping_pong,
+  link_with : [lib_pp, lib_pp_exec],
   link_args : extra_args,
   install : false
 )
@@ -19,7 +19,7 @@ ppg_img_test = executable('ppg-img-test',
   'test-img.c',
   include_directories : pp_inc,
   dependencies : [check],
-  link_with : lib_ping_pong,
+  link_with : [lib_pp, lib_pp_exec],
   link_args : extra_args,
   install : false
 )
@@ -29,7 +29,7 @@ ppg_user_input_test = executable('ppg-user-input-test',
   'test-user-input.c',
   include_directories : pp_inc,
   dependencies : [check],
-  link_with : lib_ping_pong,
+  link_with : [lib_pp, lib_pp_exec],
   link_args : extra_args,
   install : false
 )
