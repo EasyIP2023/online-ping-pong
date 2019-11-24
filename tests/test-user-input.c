@@ -61,6 +61,7 @@ START_TEST(test_user_input) {
   SDL_Event e;
   while (!ppg_poll_ev(&e, &clip)) {
     /* First clear the renderer */
+    if (clip == RET_TO_MENU) break;
     SDL_RenderClear(game.ren);
     SDL_QueryTexture(game.display_items[cur_di].tex, NULL, NULL, &iW, &iH);
     /* key press equals to which clip should be drawn */

@@ -4,12 +4,22 @@ extra_args = ['-g', '-ggdb3']
 
 test_dir = meson.current_build_dir()
 
+# Testing server suite
+ppg_server_test = executable('ppg-server-test',
+  'test-server.c',
+  include_directories : pp_inc,
+  dependencies : [check],
+  link_with : [lib_pp_net, lib_pp_std],
+  link_args : extra_args,
+  install : false
+)
+
 # Testing bmp suite
 ppg_bmp_test = executable('ppg-bmp-test',
   'test-bmp.c',
   include_directories : pp_inc,
   dependencies : [check],
-  link_with : [lib_pp, lib_pp_exec],
+  link_with : [lib_pp, lib_pp_std],
   link_args : extra_args,
   install : false
 )
@@ -19,7 +29,7 @@ ppg_img_test = executable('ppg-img-test',
   'test-img.c',
   include_directories : pp_inc,
   dependencies : [check],
-  link_with : [lib_pp, lib_pp_exec],
+  link_with : [lib_pp, lib_pp_std],
   link_args : extra_args,
   install : false
 )
@@ -29,7 +39,7 @@ ppg_user_input_test = executable('ppg-user-input-test',
   'test-user-input.c',
   include_directories : pp_inc,
   dependencies : [check],
-  link_with : [lib_pp, lib_pp_exec],
+  link_with : [lib_pp, lib_pp_std],
   link_args : extra_args,
   install : false
 )
@@ -42,6 +52,7 @@ run_command('cp',
   test_dir
 )
 
+test('ppg-server-test', ppg_server_test, suite: ['net'])
 test('ppg-bmp-test', ppg_bmp_test, suite: ['all'])
 test('ppg-img-test', ppg_img_test, suite: ['all'])
 test('ppg-user-input-test', ppg_user_input_test, suite: ['all'])

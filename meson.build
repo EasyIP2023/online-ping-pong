@@ -18,7 +18,7 @@ add_project_arguments(
     # Added these to preprocessor constants just in case
     '-DPPG_VERSION="@0@"'.format(meson.project_version()),
     '-DPPG_DIR_SRC="@0@"'.format(meson.current_source_dir()),
-    '-D_POSIX_C_SOURCE=200809L'
+    '-D_POSIX_C_SOURCE=200112L'
   ],
   language : 'c'
 )
@@ -30,7 +30,16 @@ subdir('tests')
 
 executable(
   'online-ping-pong',
-  link_with: [lib_pp, lib_pp_exec],
+  link_with: [lib_pp, lib_pp_std, lib_pp_net, lib_pp_cli_exec],
   install: true,
+  link_args : extra_args,
+  install_dir: '/usr/bin'
+)
+
+executable(
+  'oppg-server-start',
+  link_with: [lib_pp, lib_pp_std, lib_pp_net, lib_pp_serv_exec],
+  install: true,
+  link_args : extra_args,
   install_dir: '/usr/bin'
 )

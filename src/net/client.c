@@ -7,7 +7,7 @@ bool ppg_connect_client(const char *ip_addr, uint16_t port) {
   socklen_t addr_size;
 
   /* Create UDP socket*/
-  client_sock = socket(PF_INET, SOCK_STREAM, 0);
+  client_sock = socket(AF_INET, SOCK_STREAM, 0);
   if (client_sock == -1) return false;
 
   /*Configure settings in address struct*/
