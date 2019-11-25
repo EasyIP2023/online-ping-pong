@@ -16,12 +16,12 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 * SDL2_ttf
 * SDL2_mixer
 
-### Online Ping Pong makes full utilization of:
+### Online Ping Pong makes full utilization of
 * **SDL2:** For graphics
 * **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established.
 * **Epoll:** To better manage an array of open file descriptors to see which one is ready for read/write operations.
 * **Non-Blocking I/0:** All fd's are set into non-blocking mode, so that file descriptors don't have to wait for unix/linux system calls like [read(2)](https://linux.die.net/man/2/read)/[write(2)](https://linux.die.net/man/2/write) to finish.
-* **Thread Pool:** Queue's up task for threads to execute. Number of threads is equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching.
+* **Thread Pool:** Queue's up task for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want to many threads blocked becuase of I/O operations, this leaves to many threads idle.
 * **If Statements:** Bool functions final returns are not the same, so if statement checks vary from function to function. :stuck_out_tongue_winking_eye: :sweat_smile:
 
 ### Installation/Usage
@@ -29,12 +29,20 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 git clone https://github.com/EasyIP2023/online-ping-pong.git
 mkdir -v build
 meson build
+# Client
 ./build/online-ping-pong
+
+# Server
+./build/oppg-server-start
 ```
 
 ```
 sudo ninja install -C build
+# Client
 online-ping-pong
+
+# Server
+oppg-server-start
 ```
 
 ### Running Test
@@ -45,3 +53,4 @@ ninja test -C build/
 ### References
 * [Will Usher SDL2 Tutorial](https://www.willusher.io/pages/sdl2/)
 * [TheCplusPlusGuy simple pong game](https://www.youtube.com/watch?v=cf0vWJn9zZc&list=PL949B30C9A609DEE8&index=20)
+* [Thread Pools In C](https://nachtimwald.com/2019/04/12/thread-pool-in-c/)

@@ -18,7 +18,7 @@ add_project_arguments(
     # Added these to preprocessor constants just in case
     '-DPPG_VERSION="@0@"'.format(meson.project_version()),
     '-DPPG_DIR_SRC="@0@"'.format(meson.current_source_dir()),
-    '-D_POSIX_C_SOURCE=200112L'
+    '-D_DEFAULT_SOURCE'
   ],
   language : 'c'
 )

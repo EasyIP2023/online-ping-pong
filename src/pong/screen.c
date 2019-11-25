@@ -43,7 +43,6 @@ static bool font(ppg *game, uint32_t cur_di, const char *path, int font_size) {
   return true;
 }
 
-/* This is very inefficient, but it'll work for what I need to do */
 static bool ppg_render_texture_text(ppg *game, uint32_t cur_di, SDL_Rect *dst, const char *msg) {
   bool ret = false;
   /**

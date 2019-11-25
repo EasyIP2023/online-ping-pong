@@ -5,8 +5,8 @@ extra_args = ['-g', '-ggdb3']
 test_dir = meson.current_build_dir()
 
 # Testing server suite
-ppg_server_test = executable('ppg-server-test',
-  'test-server.c',
+ppg_net_test = executable('ppg-net-test',
+  'test-net.c',
   include_directories : pp_inc,
   dependencies : [check],
   link_with : [lib_pp_net, lib_pp_std],
@@ -52,7 +52,7 @@ run_command('cp',
   test_dir
 )
 
-test('ppg-server-test', ppg_server_test, suite: ['net'])
+test('ppg-net-test', ppg_net_test, suite: ['net'])
 test('ppg-bmp-test', ppg_bmp_test, suite: ['all'])
 test('ppg-img-test', ppg_img_test, suite: ['all'])
 test('ppg-user-input-test', ppg_user_input_test, suite: ['all'])
