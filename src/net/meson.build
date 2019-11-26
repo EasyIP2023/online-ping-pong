@@ -2,7 +2,7 @@
 threads = dependency('threads')
 
 tpool = ['tpool.c']
-net = ['server.c']
+net = ['server.c', 'client.c']
 
 lib_pp_net = static_library(
   'lppn',

@@ -1,18 +1,18 @@
 #include <check.h>
 #include <common.h>
 #include <net.h>
-#include <tpool.h>
 
 /* 3 Threads 100 work items */
 #define NUM_THREADS 3
 #define NUM_ITEMS 100
 
-void worker(void *arg) {
+void worker(void *server, void *arg) {
+  ppg_server_t *serv = (ppg_server_t *) server;
   int *val = (int *) arg;
   int old = *val;
 
   *val += 1000;
-  ppg_log_me(PPG_WARNING, "tid=%p, old=%d, val=%d", pthread_self(), old, *val);
+  ppg_log_me(PPG_WARNING, "tid=%p, old=%d, val=%d, serv=%p", pthread_self(), old, *val, serv);
 
   if (*val%2) usleep(100000);
 }
@@ -25,19 +25,27 @@ START_TEST(test_create_serv) {
   }
 
   ppg_freeup_server(server);
+  ppg_log_me(PPG_DANGER, "Successfully freed memory");
 } END_TEST;
 
 START_TEST(test_thread_pool) {
   tpool_t *tp = NULL;
   int vals[NUM_ITEMS];
   uint32_t i = 0;
+  ppg_server_t *server = ppg_create_server(3001, 64, 1000);
+  if (!server) ck_abort_msg(NULL);
 
   tp = ppg_tpool_create(NUM_THREADS);
-  if (!tp) ck_abort_msg(NULL);
+  if (!tp) {
+    ppg_freeup_server(server);
+    ck_abort_msg(NULL);
+  }
 
   for (i=0; i < NUM_ITEMS; i++) {
     vals[i] = i;
-    if (!ppg_tpool_add_work(tp, worker, vals+i)) {
+    if (!ppg_tpool_add_work(tp, worker, server, vals+i)) {
+      ppg_freeup_tpool(tp);
+      ppg_freeup_server(server);
       ppg_log_me(PPG_DANGER, "[x] ppg_tpool_add_work failed");
       ck_abort_msg(NULL);
     }
@@ -49,6 +57,7 @@ START_TEST(test_thread_pool) {
     ppg_log_me(PPG_INFO, "%d", vals[i]);
 
   ppg_freeup_tpool(tp);
+  ppg_freeup_server(server);
 } END_TEST;
 
 Suite *main_suite(void) {

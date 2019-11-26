@@ -10,11 +10,13 @@
 /**
 * Worker queue is a simple link list that stores
 * (func): function call
-* (arg): its arguments
+* (server): ppg_server_t argument
+* (arg): its argument
 * (next): A pointer to the next worker
 */
 typedef struct _tpool_work_t tpool_work_t;
 struct _tpool_work_t {
+  void *server;
   void *arg;
   thread_func_t func;
   tpool_work_t *next;
@@ -43,7 +45,7 @@ struct _tpool_t {
 };
 
 /* Create worker helper */
-static tpool_work_t *tpool_work_create(thread_func_t func, void *arg) {
+static tpool_work_t *tpool_work_create(thread_func_t func, void *server, void *arg) {
   tpool_work_t *work = NULL;
 
   if (func == NULL) return NULL;
@@ -56,6 +58,7 @@ static tpool_work_t *tpool_work_create(thread_func_t func, void *arg) {
 
   work->func = func;
   work->arg  = arg;
+  work->server = server;
   work->next = NULL;
 
   return work;
@@ -118,7 +121,7 @@ static void *tpool_worker(void *arg) {
     pthread_mutex_unlock(&tp->mux);
 
     if (work) {
-      work->func(work->arg);
+      work->func(work->server, work->arg);
       tpool_work_destroy(work);
     }
 
@@ -174,12 +177,12 @@ tpool_t *ppg_tpool_create(uint32_t num) {
 * First by creating a work object
 * Locking the mutex and adding the object to the liked list
 */
-bool ppg_tpool_add_work(tpool_t *tp, thread_func_t func, void *arg) {
+bool ppg_tpool_add_work(tpool_t *tp, thread_func_t func, void *server, void *arg) {
   tpool_work_t *work = NULL;
 
   if (!tp) return false;
 
-  work = tpool_work_create(func, arg);
+  work = tpool_work_create(func, server, arg);
   if (!work) {
     ppg_log_me(PPG_DANGER, "[x] tpool_work_create failed");
     return false;

@@ -2,9 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](#license)
 
-This was hackishly created, Run times (Just becuase):
-* **Client Runtime:** O(n)
-* **Server Runtime:** O(n^2)
+**This was** :turtle: **hackishly created**
 
 Audio From: https://www.bensound.com
 
@@ -21,7 +19,7 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 * **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established.
 * **Epoll:** To better manage an array of open file descriptors to see which one is ready for read/write operations.
 * **Non-Blocking I/0:** All fd's are set into non-blocking mode, so that file descriptors don't have to wait for unix/linux system calls like [read(2)](https://linux.die.net/man/2/read)/[write(2)](https://linux.die.net/man/2/write) to finish.
-* **Thread Pool:** Queue's up task for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want to many threads blocked becuase of I/O operations, this leaves to many threads idle.
+* **Thread Pool:** Queue's up task for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want too many threads blocked becuase of I/O operations, this leaves too many threads idle.
 * **If Statements:** Bool functions final returns are not the same, so if statement checks vary from function to function. :stuck_out_tongue_winking_eye: :sweat_smile:
 
 ### Installation/Usage

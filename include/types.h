@@ -16,19 +16,22 @@
 #define RET_TO_MENU 657
 
 typedef enum _audio_types {
-  PPG_MUSIC = 0,
-  PPG_EFFECT = 1
+  PPG_MUSIC     = 0x00000000,
+  PPG_EFFECT    = 0x00000001,
+  PPG_MAX_AUDIO = 0xffffffff
 } audio_types;
 
 typedef enum _texture_types {
-  PPG_BMP_TEX = 0,
-  PPG_IMG_TEX = 1,
-  PPG_FONT_TEX = 2
+  PPG_BMP_TEX  = 0x00000000,
+  PPG_IMG_TEX  = 0x00000001,
+  PPG_FONT_TEX = 0x00000002,
+  PPG_MAX_TEX  = 0xffffffff
 } texture_types;
 
 typedef enum _otba_types {
-  PPG_TEXTURE = 0,
-  PPG_AUDIO = 1
+  PPG_TEXTURE  = 0x00000000,
+  PPG_AUDIO    = 0x00000001,
+  PPG_MAX_OTBA = 0xffffffff
 } otba_types;
 
 typedef struct _ppg {
