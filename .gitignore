@@ -15,4 +15,3 @@ valgrind*
 vgcore.*
 peda*
 log.txt
-kill_server.sh

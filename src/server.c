@@ -20,10 +20,8 @@ int main() {
       ppg_log_me(PPG_DANGER, "[x] fork failed");
       return EXIT_FAILURE;
     case 0:
-      for (uint32_t i = 0; i < 16; i++) {
+      for (uint32_t i = 0; i < 30; i++)
         ppg_connect_client("127.0.0.1", 5001);
-        // usleep(10000);
-      }
       break;
     default:
       while(ppg_epoll_server(server, tp)) {

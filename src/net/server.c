@@ -1,8 +1,9 @@
 #include <common.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <sys/epoll.h>
 #include <net.h>
+
+static int ERR64 = -1;
 
 /**
 * EPOLLIN: Associate a file descriptor for read() operations
@@ -20,7 +21,7 @@ static uint32_t common_eflags = EPOLLIN | EPOLLOUT;
 struct ppg_client_t {
   uint32_t sock_fd;
   uint32_t state;
-  uint32_t game_num;
+  bool playing;
   uint32_t posX, posY;
 };
 
@@ -51,6 +52,9 @@ struct _ppg_server_t {
     struct ppg_ball_t ball;
     bool active;
   } *games;
+  struct _clients {
+    uint32_t gn; /* Game number */
+  } *clients;
 };
 
 /* representing states with uint32_t 2^32 */
@@ -68,6 +72,7 @@ static void init_values(ppg_server_t *server) {
   server->max_evs = 0;
   server->games_running = 0;
   server->games = NULL;
+  server->clients = NULL;
 }
 
 /**
@@ -107,7 +112,7 @@ static bool ec_call(ppg_server_t *server, uint32_t *fd, uint32_t events) {
   init_epoll_values(&event);
   event.events = events;
   event.data.fd = *fd;
-  if (epoll_ctl(server->event_fd, EPOLL_CTL_ADD, *fd, &event) == -1) {
+  if (epoll_ctl(server->event_fd, EPOLL_CTL_ADD, *fd, &event) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] epoll_ctl failed");
     return false;
   }
@@ -119,31 +124,29 @@ static void handle_client(void *serv, void *arg) {
   ppg_server_t *server = (ppg_server_t *) serv;
   uint32_t cur_game = *((uint32_t *) arg);
 
-  if (server->games[cur_game].c1.state == NEW && server->games[cur_game].c1.sock_fd) {
+  if (!server->games[cur_game].c1.playing && server->games[cur_game].c1.state == ESTABLISHED) {
     /* Make Client Sock non-blocking */
   	if (!make_fd_non_blocking(&server->games[cur_game].c1.sock_fd)) {
   		ppg_log_me(PPG_DANGER, "[x] make_fd_non_blocking");
   		return;
   	}
 
-    server->games[cur_game].c1.state = ESTABLISHED;
-    server->games[cur_game].c1.game_num = cur_game;
-    ppg_log_me(PPG_WARNING, "client fd %u is now in non-blocking mode", server->games[cur_game].c1.sock_fd);
+    server->games[cur_game].c1.playing = true;
+    ppg_log_me(PPG_WARNING, "client1 fd %u is now playing and in non-blocking mode", server->games[cur_game].c1.sock_fd);
     /* Add client FD to epoll event loop, once added leave function */
     if (ec_call(server, &server->games[cur_game].c1.sock_fd, common_eflags)) return;
   }
-  if (server->games[cur_game].c2.state == NEW && server->games[cur_game].c2.sock_fd) {
+  if (!server->games[cur_game].c2.playing && server->games[cur_game].c2.state == ESTABLISHED) {
     /* Make Client Sock non-blocking */
     if (!make_fd_non_blocking(&server->games[cur_game].c2.sock_fd)) {
       ppg_log_me(PPG_DANGER, "[x] make_fd_non_blocking");
     	return;
     }
 
-    server->games[cur_game].c2.state = ESTABLISHED;
-    server->games[cur_game].c2.game_num = cur_game;
+    server->games[cur_game].c2.playing = true;
     server->games[cur_game].active = true;
     server->games_running++;
-    ppg_log_me(PPG_WARNING, "client fd %u is now in non-blocking mode", server->games[cur_game].c2.sock_fd);
+    ppg_log_me(PPG_WARNING, "client2 fd %u is now playing in non-blocking mode", server->games[cur_game].c2.sock_fd);
     ppg_log_me(PPG_SUCCESS, "game %d is now active", cur_game);
     /* Add client FD to epoll event loop, once added leave function */
     if (ec_call(server, &server->games[cur_game].c2.sock_fd, common_eflags)) return;
@@ -152,77 +155,77 @@ static void handle_client(void *serv, void *arg) {
 
 static bool accept_client(tpool_t *tp, ppg_server_t *server, uint32_t *cur_game) {
   struct sockaddr_in cl;
-  bool ret = false;
   uint32_t c = 0, c_sock = 0;
 
   c = sizeof(struct sockaddr_in);
 
-  while(1) {
-    c_sock = accept(server->sock_fd, (struct sockaddr *) &cl, (socklen_t *) &c);
-    if (c_sock != UINT32_MAX) {
-      /* All incoming connections have been processed */
-      if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-        ppg_log_me(PPG_SUCCESS, "incomming connections accepted");
-        break;
-      }
-      if (server->games[*cur_game].c1.state == NEW) {
-        server->games[*cur_game].c1.sock_fd = c_sock;
-        ppg_log_me(PPG_INFO, "client1 connected fd: %u", server->games[*cur_game].c1.sock_fd);
-        return ppg_tpool_add_work(tp, handle_client, server, cur_game);
-      }
-      if (server->games[*cur_game].c2.state == NEW) {
-        server->games[*cur_game].c2.sock_fd = c_sock;
-        ppg_log_me(PPG_INFO, "client2 connected fd: %u", server->games[*cur_game].c2.sock_fd);
-        return ppg_tpool_add_work(tp, handle_client, server, cur_game);
-      }
+  c_sock = accept(server->sock_fd, (struct sockaddr *) &cl, (socklen_t *) &c);
+  if (c_sock != UINT32_MAX) {
+    if (server->games[*cur_game].c1.state == NEW) {
+      server->games[*cur_game].c1.sock_fd = c_sock;
+      server->games[*cur_game].c1.state = ESTABLISHED;
+      server->clients[c_sock].gn = *cur_game;
+      ppg_log_me(PPG_INFO, "client1 connected fd: %u", server->games[*cur_game].c1.sock_fd);
+      return ppg_tpool_add_work(tp, handle_client, server, cur_game);
+    }
+    if (server->games[*cur_game].c2.state == NEW) {
+      server->games[*cur_game].c2.sock_fd = c_sock;
+      server->games[*cur_game].c2.state = ESTABLISHED;
+      server->clients[c_sock].gn = *cur_game;
+      ppg_log_me(PPG_INFO, "client2 connected fd: %u", server->games[*cur_game].c2.sock_fd);
+      return ppg_tpool_add_work(tp, handle_client, server, cur_game);
     }
   }
 
-  return ret;
+  return false;
 }
 
-// static void transfer_data(int input_fd, int output_fd) {
-// 	int read_len = 0;
-// 	char recv_buff[4096];
-// 	if ((read_len = read(input_fd, recv_buff, sizeof(recv_buff))) != -1) {
-// 		if (write(output_fd, recv_buff, read_len) == EOF) {
-// 			ppg_log_me(PPG_DANGER, "[x] transfer data write");
-// 			return;
-// 		}
-// 	}
-// }
+static void transfer_data(int input_fd, int output_fd) {
+	int read_len = 0;
+	char recv_buff[4096];
+	if ((read_len = read(input_fd, recv_buff, sizeof(recv_buff))) != ERR64) {
+		if (write(output_fd, recv_buff, read_len) == EOF) {
+			ppg_log_me(PPG_DANGER, "[x] transfer data write");
+			return;
+		}
+	}
+}
 
-// static void play_game(void *serv, void *arg) {
-//   ppg_server_t *server = (ppg_server_t *) serv;
-//   uint32_t cur_game = *((uint32_t *) arg);
-//
-// 	switch (server->games[cur_game].c1.state) {
-// 		case ESTABLISHED:
-//       // transfer_data(server->games[cur_game].c1.sock_fd, server->games[cur_game].c2.sock_fd);
-//       break;
-//     case TERMINATE:
-//       close(server->games[cur_game].c1.sock_fd);
-//       break;
-// 		default: break;
-// 	}
-//   switch (server->games[cur_game].c2.state) {
-// 		case ESTABLISHED:
-//       // transfer_data(server->games[cur_game].c2.sock_fd, server->games[cur_game].c1.sock_fd);
-//       break;
-//     case TERMINATE:
-//       close(server->games[cur_game].c2.sock_fd);
-//       break;
-// 		default: break;
-// 	}
-// }
+static void play_game(void *serv, void *sock) {
+  ppg_server_t *server = (ppg_server_t *) serv;
+  uint32_t gn = server->clients[*((uint32_t *) sock)].gn;
+
+	switch (server->games[gn].c1.state) {
+		case ESTABLISHED:
+      transfer_data(server->games[gn].c1.sock_fd, server->games[gn].c2.sock_fd);
+      break;
+    case TERMINATE:
+      ppg_log_me(PPG_DANGER, "closing client1, socket fd: %u", server->games[gn].c1.sock_fd);
+      close(server->games[gn].c1.sock_fd);
+      break;
+		default: break;
+	}
+  switch (server->games[gn].c2.state) {
+		case ESTABLISHED:
+      transfer_data(server->games[gn].c2.sock_fd, server->games[gn].c1.sock_fd);
+      break;
+    case TERMINATE:
+      ppg_log_me(PPG_DANGER, "closing client2, socket fd: %u", server->games[gn].c2.sock_fd);
+      close(server->games[gn].c2.sock_fd);
+      break;
+		default: break;
+	}
+
+  // if (server->games[gn].c1.state == TERMINATE && server->games[gn].c2.state == TERMINATE)
+  //   server->games_running--;
+}
 
 void ppg_freeup_server(ppg_server_t *server) {
   close(server->event_fd);
   close(server->sock_fd);
-  if (server->events)
-    free(server->events);
-  if (server->games)
-    free(server->games);
+  FREE(server->clients);
+  FREE(server->events);
+  FREE(server->games);
   init_values(server);
   FREE(server);
 }
@@ -240,7 +243,7 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
   struct sockaddr_in server_addr;
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(port);
-  server_addr.sin_addr.s_addr = (uint32_t) 0x00000000; // htonl(INADDR_ANY);
+  server_addr.sin_addr.s_addr = (uint32_t) 0x00000000;
   if (!memset(server_addr.sin_zero, 0, sizeof(server_addr.sin_zero))) {
     ppg_log_me(PPG_DANGER, "[x] memset call failed");
     return NULL;
@@ -256,13 +259,13 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
 
   /* Allows for immediate reuse of a port */
   int i = 1;
-  if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(uint32_t)) == -1) {
+  if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(uint32_t)) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] setsockopt call failed");
     return NULL;
   }
 
   /* Bind socket with address struct*/
-  if (bind(server->sock_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) == -1) {
+  if (bind(server->sock_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] bind failed");
     return NULL;
   }
@@ -275,7 +278,7 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
   ppg_log_me(PPG_INFO, "Server fd %u is in non-blocking mode", server->sock_fd);
 
   /* Listen in on server FD, starts server on a port */
-  if (listen(server->sock_fd, max_clients) == -1) {
+  if (listen(server->sock_fd, max_clients) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] listen() failed");
     return NULL;
   }
@@ -304,6 +307,12 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
     return NULL;
   }
 
+  server->clients = (struct _clients *) calloc(sizeof(struct _clients), server->max_evs * sizeof(struct _clients));
+  if (!server->clients) {
+    ppg_log_me(PPG_DANGER, "[x] calloc struct epoll_event *events failed");
+    return NULL;
+  }
+
   /* add server fd to epoll wait-list */
   if (!ec_call(server, &server->sock_fd, common_eflags)) return false;
   ppg_log_me(PPG_SUCCESS, "successfully added sever socket fd to epoll wait list");
@@ -320,7 +329,7 @@ bool ppg_epoll_server(ppg_server_t *server, tpool_t *tp) {
   * return value indicates how many members in the events buffer (sever->events)
   * are filled with event data
   */
-  event_num = epoll_wait(server->event_fd, server->events, server->max_evs, -1);
+  event_num = epoll_wait(server->event_fd, server->events, server->max_evs, ERR64);
   if (event_num == UINT32_MAX) {
     ppg_log_me(PPG_DANGER, "[x] epoll_wait command failed");
     return ret;
@@ -328,8 +337,17 @@ bool ppg_epoll_server(ppg_server_t *server, tpool_t *tp) {
 
   for (uint32_t i = 0; i < event_num; i++) {
     if (server->events[i].data.fd == (int) server->sock_fd) {
+      /* This works for one use case, this if for class not something people can use for fun */
       ret = accept_client(tp, server, &server->games_running);
+      if (!ret) return ret;
+    } else {
+      ALL_UNUSED(play_game);
+      // if ((server->events[i].events & EPOLLIN) || (server->events[i].events & EPOLLOUT)) {
+      //   ret = ppg_tpool_add_work(tp, play_game, server, &server->events[i].data.fd);
+      //   if (!ret) return ret;
+      // }
     }
   }
+
   return ret;
 }

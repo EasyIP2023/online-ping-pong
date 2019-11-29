@@ -60,6 +60,40 @@ START_TEST(test_thread_pool) {
   ppg_freeup_server(server);
 } END_TEST;
 
+/* This will leave a bunch of client file descriptors open */
+START_TEST(test_create_multiple_games) {
+  ppg_server_t *server = ppg_create_server(5001, 64, 1000);
+  if (!server) {
+    ppg_freeup_server(server);
+    ck_abort_msg(NULL);
+  }
+
+  /* Number of threads is equal to the number of CPU cores I have */
+  tpool_t *tp = ppg_tpool_create(3);
+  if (!tp) {
+    ppg_freeup_server(server);
+    ck_abort_msg(NULL);
+  }
+
+  switch (fork()) {
+  case -1:
+    ppg_log_me(PPG_DANGER, "[x] fork failed");
+    ck_abort_msg(NULL);
+  case 0:
+    for (uint32_t i = 0; i < 30; i++)
+      ppg_connect_client("127.0.0.1", 5001);
+    break;
+  default:
+    while(ppg_epoll_server(server, tp)) {
+      ppg_tpool_wait(tp);
+    }
+    break;
+  }
+
+  ppg_freeup_tpool(tp);
+  ppg_freeup_server(server);
+} END_TEST;
+
 Suite *main_suite(void) {
   Suite *s = NULL;
   TCase *tc_core = NULL;
@@ -71,6 +105,9 @@ Suite *main_suite(void) {
 
   tcase_add_test(tc_core, test_create_serv);
   tcase_add_test(tc_core, test_thread_pool);
+
+  /* This will leave a bunch of client file descriptors open */
+  tcase_add_test(tc_core, test_create_multiple_games);
   suite_add_tcase(s, tc_core);
 
   return s;
