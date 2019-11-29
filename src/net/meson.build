@@ -1,12 +1,9 @@
 
 threads = dependency('threads')
 
-tpool = ['tpool.c']
-net = ['server.c', 'client.c']
-
 lib_pp_net = static_library(
   'lppn',
-  files(net, tpool),
+  files('net.c','tpool.c'),
   include_directories: pp_inc,
   dependencies: [threads]
 )
