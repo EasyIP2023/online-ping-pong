@@ -184,14 +184,17 @@ bool ppg_screen_refresh(ppg *game) {
 
   /* Render Game Score */
   char msg[30];
-  snprintf(msg, 30, "score %d - %d", game->player.points, game->player.points);
+  snprintf(msg, 30, "score %d - %d", game->player[0].points, game->player[1].points);
   ret = ppg_render_texture_text(game, 2, &dst, msg);
   if (ret) return ret;
 
   ret = ppg_render_texture_xywh(game, 1, game->ball.box.x, game->ball.box.y, game->ball.box.w, game->ball.box.h);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 0, game->player.box.x, game->player.box.y, game->player.box.w, game->player.box.h);
+  ret = ppg_render_texture_xywh(game, 0, game->player[0].box.x, game->player[0].box.y, game->player[0].box.w, game->player[0].box.h);
+  if (ret) return ret;
+
+  ret = ppg_render_texture_xywh(game, 0, game->player[1].box.x, game->player[1].box.y, game->player[1].box.w, game->player[1].box.h);
   if (ret) return ret;
 
   SDL_RenderPresent(game->ren); /* Update the screen */
@@ -217,7 +220,7 @@ static bool entered_exit_label(SDL_Event *e) {
 }
 
 /* Hacked up but she works */
-bool ppg_show_menu(ppg *game, SDL_Event *e, int *key) {
+bool ppg_show_menu(ppg *game, SDL_Event *e, uint32_t *key) {
   bool ret = false;
   const char *labels[3] = {"Online Ping Pong", "Play Game", "Exit"};
   SDL_Color colors[2] = {{255,255,255,0}, {255,0,0,0}};

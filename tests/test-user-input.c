@@ -6,7 +6,7 @@
 ppg game;
 
 START_TEST(test_user_input) {
-  int err = 0;
+  bool err = false;
   ppg_reset_values(&game);
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -57,7 +57,7 @@ START_TEST(test_user_input) {
   }
 
   /* read user input and handle it */
-  int clip = 0;
+  uint32_t clip = 0;
   SDL_Event e;
   while (!ppg_poll_ev(&e, &clip)) {
     /* First clear the renderer */

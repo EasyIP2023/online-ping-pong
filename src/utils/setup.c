@@ -3,7 +3,7 @@
 
 static void init_texture_data(ppg *game) {
   SDL_Color color = {0, 0, 0, 0};
-  for (uint32_t i = 0; i < game->tsize; i++) {
+  for (uint32_t i = 0; i < game->di_size; i++) {
     game->display_items[i].surf = NULL;
     game->display_items[i].tex = NULL;
     game->display_items[i].font = NULL;
@@ -21,27 +21,29 @@ static void init_audio_data(ppg *game) {
 void ppg_reset_values(ppg *game) {
   game->win = NULL;
   game->ren = NULL;
-  game->tsize = 0;
+  game->di_size = 0;
   game->display_items = NULL;
-  game->player.y_vel = 0;
-  game->player.points = 0;
-  game->player.box.x = 0;
-  game->player.box.y = 0;
-  game->player.box.h = 0;
-  game->player.box.w = 0;
+  game->asize = 0;
+  game->audio = NULL;
   game->ball.y_vel = 0;
   game->ball.x_vel = 0;
   game->ball.box.x = 0;
   game->ball.box.y = 0;
   game->ball.box.h = 0;
   game->ball.box.w = 0;
-  game->asize = 0;
-  game->audio = NULL;
+  for (uint32_t i = 0; i < 2; i++) {
+    game->player[i].y_vel = 0;
+    game->player[i].points = 0;
+    game->player[i].box.x = 0;
+    game->player[i].box.y = 0;
+    game->player[i].box.h = 0;
+    game->player[i].box.w = 0;
+  }
 }
 
 void ppg_freeup_game(ppg *game) {
   if (game->display_items) {
-    for (uint32_t i = 0; i < game->tsize; i++) {
+    for (uint32_t i = 0; i < game->di_size; i++) {
       if (game->display_items[i].tex) {
         SDL_DestroyTexture(game->display_items[i].tex);
         game->display_items[i].tex = NULL;
@@ -84,7 +86,7 @@ void ppg_freeup_game(ppg *game) {
 bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
   switch (type) {
     case PPG_TEXTURE:
-      game->tsize = size;
+      game->di_size = size;
       game->display_items = (struct _display_item *) calloc(sizeof(struct _display_item), size * sizeof(struct _display_item));
       if (game->display_items) { init_texture_data(game); return false; }
       else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }

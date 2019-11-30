@@ -1,6 +1,3 @@
-#include <libgen.h>
-#include <stdint.h>
-
 #include <common.h>
 
 /* ANSI Escape Codes */

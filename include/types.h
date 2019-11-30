@@ -1,19 +1,7 @@
 #ifndef PPG_TYPES_H
 #define PPG_TYPES_H
 
-#define FPS 60
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
-#define BALL_WIDTH 50
-#define BALL_HEIGHT 50
-#define PLAYER_WIDTH 30
-#define PLAYER_HEIGHT 150
-#define KEY_RELEASED 900
-#define FONT_SIZE 500
-#define MOUSE_BUTTON_PRESSED 645
-#define EXIT_GAME 123
-#define PLAY_GAME 345
-#define RET_TO_MENU 657
+#include <const.h>
 
 typedef enum _audio_types {
   PPG_MUSIC     = 0x00000000,
@@ -38,7 +26,7 @@ typedef struct _ppg {
   SDL_Window *win;
   SDL_Renderer *ren;
 
-  uint32_t tsize;
+  uint32_t di_size;
   struct _display_item {
     SDL_Surface *surf;
     SDL_Texture *tex;
@@ -46,22 +34,23 @@ typedef struct _ppg {
     TTF_Font *font;
   } *display_items;
 
-  struct _ball {
-    int x_vel, y_vel;   /* x and y velocity */
-    SDL_Rect box;
-  } ball;
-
-  struct _paddle {
-    int y_vel;  /* paddle only has a y velocity */
-    int points;
-    SDL_Rect box;
-  } player;
-
   uint32_t asize;
   struct _audio {
     Mix_Chunk *effect;
     Mix_Music *music;
   } *audio;
+
+  struct _ball {
+    uint32_t x_vel, y_vel;   /* x and y velocity */
+    SDL_Rect box;
+  } ball;
+
+  struct _player {
+    uint32_t y_vel;  /* player only has a y velocity */
+    uint32_t points;
+    SDL_Rect box;
+    bool reset;
+  } player[2];
 } ppg;
 
 #endif

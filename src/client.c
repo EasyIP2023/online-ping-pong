@@ -1,12 +1,8 @@
 #include <common.h>
 #include <ppg.h>
+#include <net.h>
 
-static void game_reset(ppg *game) {
-  ppg_player_init(game, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, 6);
-  // Player 2
-  // ppg_player_init(&game, SCREEN_WIDTH - PLAYER_WIDTH, HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT, 3);
-  ppg_ball_init(game, SCREEN_WIDTH/2 - BALL_WIDTH, SCREEN_HEIGHT/2 - BALL_HEIGHT, BALL_WIDTH, BALL_HEIGHT, 12, 12);
-}
+#include <netpong.h>
 
 static bool load_display_items(ppg *game) {
   bool err = false;
@@ -33,41 +29,40 @@ static bool load_display_items(ppg *game) {
   return err;
 }
 
-int main(void) {
-  int err = 0;
+bool start_client(const char *ip_addr, uint16_t port) {
+  bool err = false;
   ppg game;
-  game.player.points = 0;
   ppg_reset_values(&game);
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     ppg_log_me(PPG_DANGER, "Could not initialize SDL: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return false;
   }
 
   if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
     ppg_log_me(PPG_DANGER, "IMG_Init failed: %s", IMG_GetError());
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   if (TTF_Init() != 0) {
     ppg_log_me(PPG_DANGER, "TTF_Init failed: %s", TTF_GetError());
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   err = ppg_otba(&game, 4, PPG_TEXTURE);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   err = ppg_otba(&game, 3, PPG_AUDIO);
   if (err) {
     ppg_log_me(PPG_DANGER, "Failed to allocate space");
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   ppg_log_me(PPG_SUCCESS, "SDL Initialized");
@@ -76,7 +71,7 @@ int main(void) {
   if (!game.win) {
     ppg_log_me(PPG_DANGER, "SDL_CreateWindow Error: %s", SDL_GetError());
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
   ppg_log_me(PPG_SUCCESS, "SDL Created Window");
 
@@ -84,41 +79,38 @@ int main(void) {
   if (!game.ren){
     ppg_log_me(PPG_DANGER, "SDL_CreateRenderer Error: %s", SDL_GetError());
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   ppg_log_me(PPG_SUCCESS, "SDL Created Renderer");
 
   if (load_display_items(&game)) {
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
-
-  time_t t;
-  srand((unsigned) time(&t));
-  uint8_t ball_dir = rand() % 4;
-  game_reset(&game);
 
   err = ppg_load_audio(&game, 0, "music/evolution.mp3", PPG_MUSIC);
   if (!err) {
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   err = ppg_load_audio(&game, 1, "music/dreams.mp3", PPG_MUSIC);
   if (!err) {
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
   err = ppg_load_audio(&game, 2, "music/mario_jump.wav", PPG_EFFECT);
   if (!err) {
     ppg_freeup_game(&game);
-    return EXIT_FAILURE;
+    return false;
   }
 
+  ppg_player_init(&game, 0, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT);
+
   /* read user input and handle it */
-  int key = 0;
+  uint32_t key = 0, sock_fd = 0;
   SDL_Event e;
   bool game_menu = false, game_over = true, music_playing = false;
   while (!ppg_poll_ev(&e, &key)) {
@@ -130,7 +122,7 @@ int main(void) {
       if (!music_playing) {
         if (!ppg_play_music(&game, 1, -1)) {
           ppg_freeup_game(&game);
-          return EXIT_FAILURE;
+          return false;
         }
         music_playing = true;
       }
@@ -138,6 +130,8 @@ int main(void) {
       if (key == PLAY_GAME) {
         game_over = false;
         music_playing = false;
+        sock_fd = ppg_connect_client(ip_addr, port);
+        if (sock_fd == UINT32_MAX) return false;
       }
     }
 
@@ -146,45 +140,33 @@ int main(void) {
       if (!music_playing) {
         if (!ppg_play_music(&game, 0, -1)) {
           ppg_freeup_game(&game);
-          return EXIT_FAILURE;
+          return false;
         }
         music_playing = true;
       }
       if (ppg_screen_refresh(&game)) goto exit_game;
-      ppg_ball_move(&game, ball_dir);
       switch (key) {
         case 4:
-          if (key != KEY_RELEASED) ppg_player_move_down(&game);
+          if (key != KEY_RELEASED) ppg_player_move_down(&game, 0);
           break;
         case 5:
-          if (key != KEY_RELEASED) ppg_player_move_up(&game);
+          if (key != KEY_RELEASED) ppg_player_move_up(&game, 0);
           break;
         default: break;
       }
-      switch (ppg_is_out(&game)) {
-        case 1:
-          game.player.points++;
-          ball_dir = rand() % 4;
-          game_reset(&game);
-          break;
-        case 2:
-          game.player.points++;
-          ball_dir = rand() % 4;
-          game_reset(&game);
-          break;
-        default: break;
-      }
-      if (game.player.points == 10) {
-        game.player.points = 0;
+      if (game.player[0].points == MAX_POINTS || game.player[1].points == MAX_POINTS) {
+        game.player[0].points = game.player[1].points = 0;
         game_over = true;
         music_playing = false;
+        close(sock_fd);
       }
     }
     ppg_reg_fps();
   }
 
 exit_game:
+  close(sock_fd);
   ppg_freeup_game(&game);
   ppg_log_me(PPG_SUCCESS, "SDL Shutdown");
-  return EXIT_SUCCESS;
+  return true;
 }

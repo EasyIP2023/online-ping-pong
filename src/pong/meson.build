@@ -5,8 +5,8 @@ sdl2_ttf = dependency('SDL2_ttf')
 sdl2_mixer = dependency('SDL2_mixer')
 
 pp_files = [
-  'screen.c', 'events.c', 'ball.c',
-  'paddle.c', 'audio.c'
+  'screen.c', 'events.c',
+  'player.c', 'audio.c'
 ]
 
 deps = [sdl2, sdl2_image, sdl2_ttf, sdl2_mixer]

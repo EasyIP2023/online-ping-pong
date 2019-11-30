@@ -28,17 +28,14 @@ pp_inc = include_directories('.','include')
 subdir('src')
 subdir('tests')
 
-executable(
-  'online-ping-pong',
-  link_with: [lib_pp, lib_pp_std, lib_pp_net, lib_pp_cli_exec],
-  install: true,
-  link_args : extra_args,
-  install_dir: '/usr/bin'
-)
+oppg_libs = [
+  lib_pp, lib_pp_std,
+  lib_pp_net, lib_pp_exec
+]
 
 executable(
-  'oppg-server-start',
-  link_with: [lib_pp, lib_pp_std, lib_pp_net, lib_pp_serv_exec],
+  'online-ping-pong',
+  link_with: oppg_libs,
   install: true,
   link_args : extra_args,
   install_dir: '/usr/bin'

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <log.h>
+#include <stdint.h>
 
 #define FREE(ptr) if (ptr) { free(ptr); ptr = NULL; }
 

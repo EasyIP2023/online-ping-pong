@@ -8,7 +8,7 @@
 ppg game;
 
 START_TEST(test_img) {
-  int err = 0;
+  bool err = false;
   ppg_reset_values(&game);
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {

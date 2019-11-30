@@ -1,7 +1,7 @@
 #include <common.h>
 #include <ppg.h>
 
-bool ppg_poll_ev(SDL_Event *e, int *key) {
+bool ppg_poll_ev(SDL_Event *e, uint32_t *key) {
   SDL_PollEvent(e);
   switch (e->type) {
     case SDL_QUIT: return true; /* If user closes the window */
