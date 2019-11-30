@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
     switch (c) {
       case 0:
         if (!strcmp(long_options[option_index].name, "help")) { help_message(); goto exit_game; }
-        if (!strcmp(long_options[option_index].name, "ip")) { if (!optarg) memcpy(opts[0], optarg, sizeof(opts[0])); }
-        if (!strcmp(long_options[option_index].name, "port")) { if (!optarg) memcpy(opts[1], optarg, sizeof(opts[1])); }
+        if (!strcmp(long_options[option_index].name, "ip")) memcpy(opts[0], optarg, sizeof(opts[0]));
+        if (!strcmp(long_options[option_index].name, "port")) memcpy(opts[1], optarg, sizeof(opts[1]));
         if (!strcmp(long_options[option_index].name, "server")) {
           port = atoi(opts[1]);
           if (port) {

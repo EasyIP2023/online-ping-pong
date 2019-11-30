@@ -2,7 +2,7 @@
 
 :turtle: [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](#license) :turtle:
 
-Run times (Just becuase):
+Run times (Just because this was hackishly created):
 * **Client Runtime:** O(n)
 * **Server Runtime:** O(n^2)
 
@@ -35,10 +35,10 @@ ninja -C build
 ```
 sudo ninja install -C build
 # Server
-online-ping-pong --server --port 5001
+online-ping-pong --port 5001 --server
 
-# Server
-online-ping-pong --client --ip 8.8.8.8 --port 5001
+# Client
+online-ping-pong --ip 127.0.0.1 --port 5001 --client
 ```
 
 ### Running Test
