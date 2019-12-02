@@ -22,6 +22,26 @@ typedef enum _otba_types {
   PPG_MAX_OTBA = 0xffffffff
 } otba_types;
 
+/**
+* (x_vel): ball velocity X
+* (y_vel): ball velocity Y
+* SDL_Rect(box):
+*   (x,y): postion cordinate data
+*   (w,h): Width and height of the image
+*/
+typedef struct _game_data {
+  struct _ball {
+    uint32_t x_vel, y_vel;   /* x and y velocity */
+    SDL_Rect box;
+  } ball;
+
+  struct _player {
+    uint32_t y_vel;  /* player only has a y velocity */
+    uint32_t points;
+    SDL_Rect box;
+  } player[2];
+} game_data;
+
 typedef struct _ppg {
   SDL_Window *win;
   SDL_Renderer *ren;
@@ -40,17 +60,7 @@ typedef struct _ppg {
     Mix_Music *music;
   } *audio;
 
-  struct _ball {
-    uint32_t x_vel, y_vel;   /* x and y velocity */
-    SDL_Rect box;
-  } ball;
-
-  struct _player {
-    uint32_t y_vel;  /* player only has a y velocity */
-    uint32_t points;
-    SDL_Rect box;
-    bool reset;
-  } player[2];
+  game_data g_data;
 } ppg;
 
 #endif

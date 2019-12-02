@@ -1,8 +1,33 @@
+#include <fcntl.h>
+
 #include <common.h>
 #include <ppg.h>
 #include <net.h>
 
 #include <netpong.h>
+
+/**
+* I decided to pass the address of the file descriptor
+* to ensure that the it gets set into non-blocking mode.
+* If I am not mistaken one doesn't need to do that, just
+* needs to pass the file descriptor.
+*/
+static bool make_fd_non_blocking(uint32_t *fd) {
+  int flags;
+
+  /* Save the current flags */
+  if ((flags = fcntl(*fd, F_GETFL, 0)) == -1) {
+    ppg_log_me(PPG_DANGER, "[x] fcntl(F_GETFL): %s", strerror(errno));
+    return false;
+  }
+
+  if (fcntl(*fd, F_SETFL, flags |= O_NONBLOCK) == -1) {
+    ppg_log_me(PPG_DANGER, "[x] fcntl(F_SETFL): %s", strerror(errno));
+    return false;
+  }
+
+  return true;
+}
 
 static bool load_display_items(ppg *game) {
   bool err = false;
@@ -16,8 +41,6 @@ static bool load_display_items(ppg *game) {
   cur_di++;
 
   /* Load score font */
-  SDL_Color color = {26, 255, 26, 0};
-  ppg_copy_sdl_color(game, cur_di, color);
   err = ppg_load_display_item(game, "i:p:t:f", cur_di, "fonts/bankruptcy/Bankruptcy.otf", PPG_FONT_TEX, FONT_SIZE);
   if (err) return err;
   cur_di++;
@@ -27,6 +50,57 @@ static bool load_display_items(ppg *game) {
   if (err) return err;
 
   return err;
+}
+
+static void player_two_reset(ppg *game) {
+  time_t t;
+  srand((unsigned) time(&t));
+  uint8_t ball_dir = rand() % 4;
+  ppg_player_init(game, 1, SCREEN_WIDTH - PLAYER_WIDTH, SCREEN_HEIGHT/2);
+  ppg_ball_move(game, ball_dir);
+}
+
+static void player_one_reset(ppg *game) {
+  ppg_player_init(game, 0, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT);
+  ppg_ball_init(game);
+}
+
+static void update_player(game_data *g_data, game_data data, uint8_t p) {
+  g_data->player[p].y_vel = data.player[p].y_vel;
+  g_data->player[p].points = data.player[p].points;
+  g_data->player[p].box.x = data.player[p].box.x;
+  g_data->player[p].box.y = data.player[p].box.y;
+  g_data->player[p].box.h = data.player[p].box.h;
+  g_data->player[p].box.w = data.player[p].box.w;
+}
+
+/**
+* read data from server and update struct members
+* to present on screen, g_data: 80 bytes.
+* Ball position is updated and sent to player 2
+* player 2 then updates it on their screen
+*/
+void recv_info(uint32_t *sock, game_data *g_data, uint8_t player) {
+	game_data data;
+	read(*sock, &data, sizeof(game_data));
+  switch (player) {
+    case 0: update_player(g_data, data, 1); break;
+    case 1:
+      update_player(g_data, data, 0);
+      g_data->ball.y_vel = data.ball.y_vel;
+      g_data->ball.x_vel = data.ball.x_vel;
+      g_data->ball.box.x = data.ball.box.x;
+      g_data->ball.box.y = data.ball.box.y;
+      g_data->ball.box.h = data.ball.box.h;
+      g_data->ball.box.w = data.ball.box.w;
+      break;
+    default: break;
+  }
+}
+
+/* send struct member data to server, g_data: 80 bytes */
+void send_info(uint32_t *sock, game_data *g_data) {
+	write(*sock, g_data, sizeof(g_data));
 }
 
 bool start_client(const char *ip_addr, uint16_t port) {
@@ -107,17 +181,18 @@ bool start_client(const char *ip_addr, uint16_t port) {
     return false;
   }
 
-  ppg_player_init(&game, 0, 0, SCREEN_HEIGHT/2 - PLAYER_HEIGHT);
-
   /* read user input and handle it */
   uint32_t key = 0, sock_fd = 0;
   SDL_Event e;
   bool game_menu = false, game_over = true, music_playing = false;
+  bool run_once = false, found_player = false;
+  uint8_t player = 0xff, player_two = 0xff;
+
+  /* Game!! Welcome to crazy If Statement Checks */
   while (!ppg_poll_ev(&e, &key)) {
     if (key == EXIT_GAME) goto exit_game;
     if (key == RET_TO_MENU) { game_over = true; music_playing = false; }
 
-    /* Game Menu Crazy If Statement Checks */
     if (!game_menu && game_over) {
       if (!music_playing) {
         if (!ppg_play_music(&game, 1, -1)) {
@@ -127,11 +202,20 @@ bool start_client(const char *ip_addr, uint16_t port) {
         music_playing = true;
       }
       game_menu = ppg_show_menu(&game, &e, &key);
-      if (key == PLAY_GAME) {
+      if (key == PLAY_GAME && player == 0xff) {
         game_over = false;
         music_playing = false;
         sock_fd = ppg_connect_client(ip_addr, port);
         if (sock_fd == UINT32_MAX) return false;
+        /* Find out what player you are from the server */
+        if (read(sock_fd, &player, sizeof(player)) == -1) {
+          ppg_log_me(PPG_DANGER, "[x] read: %s", strerror(errno));
+          game_over = true;
+          music_playing = false;
+        }
+        ppg_log_me(PPG_SUCCESS, "connection established, player %u", player);
+        make_fd_non_blocking(&sock_fd);
+        if (player == 1) found_player = true;
       }
     }
 
@@ -144,21 +228,54 @@ bool start_client(const char *ip_addr, uint16_t port) {
         }
         music_playing = true;
       }
-      if (ppg_screen_refresh(&game)) goto exit_game;
+      if (ppg_screen_refresh(&game, found_player)) goto exit_game;
       switch (key) {
         case 4:
-          if (key != KEY_RELEASED) ppg_player_move_down(&game, 0);
+          if (key != KEY_RELEASED) ppg_player_move_down(&game, player);
           break;
         case 5:
-          if (key != KEY_RELEASED) ppg_player_move_up(&game, 0);
+          if (key != KEY_RELEASED) ppg_player_move_up(&game, player);
           break;
         default: break;
       }
-      if (game.player[0].points == MAX_POINTS || game.player[1].points == MAX_POINTS) {
-        game.player[0].points = game.player[1].points = 0;
+
+      switch (ppg_is_out(&game)) {
+        case 1:
+          game.g_data.player[0].points++;
+          player_two_reset(&game);
+          player_one_reset(&game);
+          break;
+        case 2:
+          game.g_data.player[1].points++;
+          player_two_reset(&game);
+          player_one_reset(&game);
+          break;
+        default: break;
+      }
+
+      if (game.g_data.player[0].points == MAX_POINTS || game.g_data.player[1].points == MAX_POINTS) {
+        game.g_data.player[0].points = game.g_data.player[1].points = 0;
         game_over = true;
         music_playing = false;
-        close(sock_fd);
+        player = player_two = 0xff;
+        player_two_reset(&game);
+        player_one_reset(&game);
+      }
+
+      if (found_player && !run_once) {
+        player_two_reset(&game);
+        player_one_reset(&game);
+        run_once = true;
+        ppg_log_me(PPG_WARNING, "Start Game");
+      }
+
+      /* Continue to read until player two connected */
+      if (!found_player && player == 0) {
+        read(sock_fd, &player_two, sizeof(player_two)); /* Don't check if read call failed */
+        found_player = (player_two != 0xff) ? true : false;
+      } else {
+        send_info(&sock_fd, &game.g_data);
+        recv_info(&sock_fd, &game.g_data, player);
       }
     }
     ppg_reg_fps();

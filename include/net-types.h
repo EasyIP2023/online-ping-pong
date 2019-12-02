@@ -11,35 +11,14 @@ typedef enum _client_states {
   MAX_CLIENT_STATE = 0xffffffff
 } client_states;
 
-typedef struct _rect_t {
-  uint32_t x, y, w, h;
-} rect_t;
-
-/**
-* (x_vel): ball velocity X
-* (y_vel): ball velocity Y
-* rect_t(box):
-*   (x,y): postion cordinate data
-*   (w,h): Width and height of the image
-*/
-typedef struct _ball_t {
-  uint32_t x_vel, y_vel;
-  rect_t box;
-} ppg_ball_t;
-
 /**
 * A single client can have a socket file descriptor (sock_fd)
 * A state to help determine what to do with client (state)
-* A game they are associated with
-* and x, y position cordinate data
 */
 typedef struct _ppg_client_t {
   uint32_t sock_fd;
   uint32_t state;
   bool playing;
-  uint32_t y_vel;  /* player only has a y velocity */
-  uint32_t points;
-  rect_t box;
 } ppg_client_t;
 
 /**
@@ -62,7 +41,6 @@ typedef struct _ppg_server_t {
   struct _games {
     ppg_client_t c1;
     ppg_client_t c2;
-    ppg_ball_t ball;
     bool active;
   } *games;
   struct _clients {

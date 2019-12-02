@@ -148,11 +148,7 @@ void ppg_render_texture(ppg *game, uint32_t cur_di, int x, int y, SDL_Rect *clip
 /* Render Texture width, height */
 bool ppg_render_texture_xywh(ppg *game, uint32_t cur_di, int x, int y, int w, int h) {
   bool ret = false;
-  SDL_Rect dst;
-  dst.x = x;
-  dst.y = y;
-  dst.w = w;
-  dst.h = h;
+  SDL_Rect dst = {x, y, w, h};
 
   /* Copy a portion of the texture to the current rendering target. */
   ret = SDL_RenderCopy(game->ren, game->display_items[cur_di].tex, NULL, &dst);
@@ -172,29 +168,33 @@ void ppg_reg_fps() {
   if (od_fps > ticks) SDL_Delay(od_fps - ticks);
 }
 
-bool ppg_screen_refresh(ppg *game) {
+bool ppg_screen_refresh(ppg *game, bool player_found) {
   bool ret = false;
-  SDL_Rect dst;
-  dst.x = 640;
-  dst.y = 0;
-  dst.w = FONT_SIZE;
-  dst.h = 166;
+  SDL_Color colors[2] = {{26, 255, 26, 0}, {255, 255, 0, 0}};
+  SDL_Rect dst = {640, 0, FONT_SIZE, 166};
 
   SDL_RenderClear(game->ren); /* First clear the renderer */
 
   /* Render Game Score */
   char msg[30];
-  snprintf(msg, 30, "score %d - %d", game->player[0].points, game->player[1].points);
+  if (player_found) {
+    ppg_copy_sdl_color(game, 2, colors[0]);
+    snprintf(msg, 30, "score %d - %d", game->g_data.player[0].points, game->g_data.player[1].points);
+  } else {
+    ppg_copy_sdl_color(game, 2, colors[1]);
+    snprintf(msg, 30, "Waiting for player 2");
+  }
+
   ret = ppg_render_texture_text(game, 2, &dst, msg);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 1, game->ball.box.x, game->ball.box.y, game->ball.box.w, game->ball.box.h);
+  ret = ppg_render_texture_xywh(game, 1, game->g_data.ball.box.x, game->g_data.ball.box.y, game->g_data.ball.box.w, game->g_data.ball.box.h);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 0, game->player[0].box.x, game->player[0].box.y, game->player[0].box.w, game->player[0].box.h);
+  ret = ppg_render_texture_xywh(game, 0, game->g_data.player[0].box.x, game->g_data.player[0].box.y, game->g_data.player[0].box.w, game->g_data.player[0].box.h);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 0, game->player[1].box.x, game->player[1].box.y, game->player[1].box.w, game->player[1].box.h);
+  ret = ppg_render_texture_xywh(game, 0, game->g_data.player[1].box.x, game->g_data.player[1].box.y, game->g_data.player[1].box.w, game->g_data.player[1].box.h);
   if (ret) return ret;
 
   SDL_RenderPresent(game->ren); /* Update the screen */
