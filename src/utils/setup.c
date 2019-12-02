@@ -25,19 +25,19 @@ void ppg_reset_values(ppg *game) {
   game->display_items = NULL;
   game->asize = 0;
   game->audio = NULL;
-  game->g_data.ball.y_vel = 0;
-  game->g_data.ball.x_vel = 0;
-  game->g_data.ball.box.x = 0;
-  game->g_data.ball.box.y = 0;
-  game->g_data.ball.box.h = 0;
-  game->g_data.ball.box.w = 0;
+  game->ball.y_vel = 0;
+  game->ball.x_vel = 0;
+  game->ball.box.x = 0;
+  game->ball.box.y = 0;
+  game->ball.box.h = 0;
+  game->ball.box.w = 0;
   for (uint32_t i = 0; i < 2; i++) {
-    game->g_data.player[i].y_vel = 0;
-    game->g_data.player[i].points = 0;
-    game->g_data.player[i].box.x = 0;
-    game->g_data.player[i].box.y = 0;
-    game->g_data.player[i].box.h = 0;
-    game->g_data.player[i].box.w = 0;
+    game->player[i].y_vel = 0;
+    game->player[i].points = 0;
+    game->player[i].box.x = 0;
+    game->player[i].box.y = 0;
+    game->player[i].box.h = 0;
+    game->player[i].box.w = 0;
   }
 }
 

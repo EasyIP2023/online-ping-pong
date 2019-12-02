@@ -179,7 +179,7 @@ bool ppg_screen_refresh(ppg *game, bool player_found) {
   char msg[30];
   if (player_found) {
     ppg_copy_sdl_color(game, 2, colors[0]);
-    snprintf(msg, 30, "score %d - %d", game->g_data.player[0].points, game->g_data.player[1].points);
+    snprintf(msg, 30, "score %d - %d", game->player[0].points, game->player[1].points);
   } else {
     ppg_copy_sdl_color(game, 2, colors[1]);
     snprintf(msg, 30, "Waiting for player 2");
@@ -188,13 +188,13 @@ bool ppg_screen_refresh(ppg *game, bool player_found) {
   ret = ppg_render_texture_text(game, 2, &dst, msg);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 1, game->g_data.ball.box.x, game->g_data.ball.box.y, game->g_data.ball.box.w, game->g_data.ball.box.h);
+  ret = ppg_render_texture_xywh(game, 1, game->ball.box.x, game->ball.box.y, game->ball.box.w, game->ball.box.h);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 0, game->g_data.player[0].box.x, game->g_data.player[0].box.y, game->g_data.player[0].box.w, game->g_data.player[0].box.h);
+  ret = ppg_render_texture_xywh(game, 0, game->player[0].box.x, game->player[0].box.y, game->player[0].box.w, game->player[0].box.h);
   if (ret) return ret;
 
-  ret = ppg_render_texture_xywh(game, 0, game->g_data.player[1].box.x, game->g_data.player[1].box.y, game->g_data.player[1].box.w, game->g_data.player[1].box.h);
+  ret = ppg_render_texture_xywh(game, 0, game->player[1].box.x, game->player[1].box.y, game->player[1].box.w, game->player[1].box.h);
   if (ret) return ret;
 
   SDL_RenderPresent(game->ren); /* Update the screen */

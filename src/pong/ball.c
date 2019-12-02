@@ -18,8 +18,8 @@ static bool collision(SDL_Rect rec1, SDL_Rect rec2) {
 }
 
 uint32_t ppg_is_out(ppg *game) {
-  if (game->g_data.ball.box.x < 0) return 1;
-  if (game->g_data.ball.box.x > SCREEN_WIDTH) return 2;
+  if (game->ball.box.x < 0) return 1;
+  if (game->ball.box.x > SCREEN_WIDTH) return 2;
   return 0;
 }
 
@@ -27,42 +27,42 @@ void ppg_ball_move(ppg *game, uint8_t dir) {
   /* Make it so that when the game starts ball's velocity is different */
   switch (dir) {
     case 0:
-      game->g_data.ball.box.x += game->g_data.ball.x_vel;
-      game->g_data.ball.box.y += game->g_data.ball.y_vel;
+      game->ball.box.x += game->ball.x_vel;
+      game->ball.box.y += game->ball.y_vel;
       break;
     case 1:
-      game->g_data.ball.box.x -= game->g_data.ball.x_vel;
-      game->g_data.ball.box.y -= game->g_data.ball.y_vel;
+      game->ball.box.x -= game->ball.x_vel;
+      game->ball.box.y -= game->ball.y_vel;
       break;
     case 2:
-      game->g_data.ball.box.x -= game->g_data.ball.x_vel;
-      game->g_data.ball.box.y += game->g_data.ball.y_vel;
+      game->ball.box.x -= game->ball.x_vel;
+      game->ball.box.y += game->ball.y_vel;
       break;
     case 3:
-      game->g_data.ball.box.x += game->g_data.ball.x_vel;
-      game->g_data.ball.box.y -= game->g_data.ball.y_vel;
+      game->ball.box.x += game->ball.x_vel;
+      game->ball.box.y -= game->ball.y_vel;
       break;
     default: break;
   }
-  if (game->g_data.ball.box.y < 0)
-    game->g_data.ball.y_vel = -game->g_data.ball.y_vel;
-  if ((game->g_data.ball.box.y + game->g_data.ball.box.h) > SCREEN_HEIGHT)
-    game->g_data.ball.y_vel = -game->g_data.ball.y_vel;
-  if (collision(game->g_data.ball.box, game->g_data.player[0].box)) {
+  if (game->ball.box.y < 0)
+    game->ball.y_vel = -game->ball.y_vel;
+  if ((game->ball.box.y + game->ball.box.h) > SCREEN_HEIGHT)
+    game->ball.y_vel = -game->ball.y_vel;
+  if (collision(game->ball.box, game->player[0].box)) {
     ppg_play_effect(game, 2, -1, 0);
-    game->g_data.ball.x_vel = -game->g_data.ball.x_vel;
+    game->ball.x_vel = -game->ball.x_vel;
   }
-  if (collision(game->g_data.ball.box, game->g_data.player[1].box)) {
+  if (collision(game->ball.box, game->player[1].box)) {
     ppg_play_effect(game, 2, -1, 0);
-    game->g_data.ball.x_vel = -game->g_data.ball.x_vel;
+    game->ball.x_vel = -game->ball.x_vel;
   }
 }
 
 void ppg_ball_init(ppg *game) {
-  game->g_data.ball.box.x = SCREEN_WIDTH/2 - BALL_WIDTH;
-  game->g_data.ball.box.y = SCREEN_HEIGHT/2 - BALL_HEIGHT;
-  game->g_data.ball.box.w = BALL_WIDTH;
-  game->g_data.ball.box.h = BALL_HEIGHT;
-  game->g_data.ball.x_vel = BALL_VELOCITY;
-  game->g_data.ball.y_vel = BALL_VELOCITY;
+  game->ball.box.x = SCREEN_WIDTH/2 - BALL_WIDTH;
+  game->ball.box.y = SCREEN_HEIGHT/2 - BALL_HEIGHT;
+  game->ball.box.w = BALL_WIDTH;
+  game->ball.box.h = BALL_HEIGHT;
+  game->ball.x_vel = BALL_VELOCITY;
+  game->ball.y_vel = BALL_VELOCITY;
 }

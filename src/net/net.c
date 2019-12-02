@@ -3,6 +3,16 @@
 #include <sys/epoll.h>
 #include <net.h>
 
+typedef struct _rect_t {
+  int x, y, w, h;
+} rect_t;
+
+struct player_redefined {
+  uint32_t y_vel;  /* player only has a y velocity */
+  uint32_t points;
+  rect_t box;
+} player;
+
 static int ERR64 = -1;
 
 /**
@@ -33,9 +43,9 @@ static void init_server_values(ppg_server_t *server) {
 /* Its 80 bytes becuase that is the sizeof(struct game_data) */
 static void transfer_data(uint32_t input_fd, uint32_t output_fd) {
   int read_line = 0;
-  char data[1024];
-	while((read_line = read(input_fd, data, sizeof(data))) > 0) {
-    if (write(output_fd, data, read_line) == EOF) {
+  struct player_redefined data;
+	while((read_line = read(input_fd, &data, sizeof(data))) > 0) {
+    if (write(output_fd, &data, read_line) == EOF) {
       ppg_log_me(PPG_DANGER, "[x] write: %s", strerror(errno));
       return;
     }
@@ -119,10 +129,19 @@ static void handle_client(void *serv, void *arg) {
       return;
     }
 
+    /* Write to player 1 that player 2 is connected */
     if (write(server->games[cur_game].c1.sock_fd, &player, sizeof(player)) == -1) {
       ppg_log_me(PPG_DANGER, "[x] write: %s", strerror(errno));
       return;
     }
+
+    /* Write to player 2 that player 1 is connected */
+    player = 0;
+    if (write(server->games[cur_game].c2.sock_fd, &player, sizeof(player)) == -1) {
+      ppg_log_me(PPG_DANGER, "[x] write: %s", strerror(errno));
+      return;
+    }
+
     /* Add client FD to epoll event loop, once added leave function */
     if (ec_call(server, &server->games[cur_game].c2.sock_fd, common_eflags)) return;
   }
@@ -323,10 +342,11 @@ uint32_t ppg_connect_client(const char *ip_addr, uint16_t port) {
   uint32_t client_sock = 0;
   struct sockaddr_in server_addr;
 
+  ALL_UNUSED(ip_addr);
   /* Configure settings in address struct*/
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(port); /* convert short integers to host byte order */
-  server_addr.sin_addr.s_addr = inet_addr(ip_addr);
+  server_addr.sin_addr.s_addr = (uint32_t) 0x00000000; // inet_network(ip_addr);
   if (!memset(server_addr.sin_zero, 0, sizeof (server_addr.sin_zero))) {
     ppg_log_me(PPG_DANGER, "[x] memset call failed");
     return UINT32_MAX;

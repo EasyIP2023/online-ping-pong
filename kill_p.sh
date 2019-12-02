@@ -4,7 +4,7 @@
 
 OUTPUT=$((
 (
-netstat -antp | grep "ppg" >&1
+netstat -antp | grep "online" >&1
 ) 1>log.txt
 ) 2>&1)
 
@@ -21,7 +21,7 @@ while read LINE; do
     let count++
     if (("$count" == "$num")); then >&2
       [[ $i =~ $pat ]]
-      # echo "${BASH_REMATCH[0]}"
+      echo "${BASH_REMATCH[0]}"
       kill -9 "$BASH_REMATCH"
       exit
     fi

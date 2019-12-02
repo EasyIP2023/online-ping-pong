@@ -53,11 +53,10 @@ static bool load_display_items(ppg *game) {
 }
 
 static void player_two_reset(ppg *game) {
-  time_t t;
-  srand((unsigned) time(&t));
-  uint8_t ball_dir = rand() % 4;
+  // time_t t;
+  // srand((unsigned) time(&t));
+  // uint8_t ball_dir = rand() % 4;
   ppg_player_init(game, 1, SCREEN_WIDTH - PLAYER_WIDTH, SCREEN_HEIGHT/2);
-  ppg_ball_move(game, ball_dir);
 }
 
 static void player_one_reset(ppg *game) {
@@ -65,42 +64,34 @@ static void player_one_reset(ppg *game) {
   ppg_ball_init(game);
 }
 
-static void update_player(game_data *g_data, game_data data, uint8_t p) {
-  g_data->player[p].y_vel = data.player[p].y_vel;
-  g_data->player[p].points = data.player[p].points;
-  g_data->player[p].box.x = data.player[p].box.x;
-  g_data->player[p].box.y = data.player[p].box.y;
-  g_data->player[p].box.h = data.player[p].box.h;
-  g_data->player[p].box.w = data.player[p].box.w;
+static void update_player(ppg *game, player_t *player, uint8_t p) {
+  game->player[p].y_vel = player->y_vel;
+  game->player[p].points = player->points;
+  game->player[p].box.x = player->box.x;
+  game->player[p].box.y = player->box.y;
+  game->player[p].box.h = player->box.h;
+  game->player[p].box.w = player->box.w;
 }
 
 /**
-* read data from server and update struct members
-* to present on screen, g_data: 80 bytes.
+* read data from server and update
+* player struct members to present on screen
 * Ball position is updated and sent to player 2
 * player 2 then updates it on their screen
 */
-void recv_info(uint32_t *sock, game_data *g_data, uint8_t player) {
-	game_data data;
-	read(*sock, &data, sizeof(game_data));
+void recv_info(uint32_t *sock, ppg *game, uint8_t player) {
+	player_t data;
+	read(*sock, &data, sizeof(data));
   switch (player) {
-    case 0: update_player(g_data, data, 1); break;
-    case 1:
-      update_player(g_data, data, 0);
-      g_data->ball.y_vel = data.ball.y_vel;
-      g_data->ball.x_vel = data.ball.x_vel;
-      g_data->ball.box.x = data.ball.box.x;
-      g_data->ball.box.y = data.ball.box.y;
-      g_data->ball.box.h = data.ball.box.h;
-      g_data->ball.box.w = data.ball.box.w;
-      break;
+    case 0: update_player(game, &data, 1); break;
+    case 1: update_player(game, &data, 0); break;
     default: break;
   }
 }
 
-/* send struct member data to server, g_data: 80 bytes */
-void send_info(uint32_t *sock, game_data *g_data) {
-	write(*sock, g_data, sizeof(g_data));
+/* send struct member data to server */
+void send_info(uint32_t *sock, ppg *game, uint8_t player) {
+	write(*sock, &game->player[player], sizeof(player_t));
 }
 
 bool start_client(const char *ip_addr, uint16_t port) {
@@ -214,8 +205,8 @@ bool start_client(const char *ip_addr, uint16_t port) {
           music_playing = false;
         }
         ppg_log_me(PPG_SUCCESS, "connection established, player %u", player);
-        make_fd_non_blocking(&sock_fd);
         if (player == 1) found_player = true;
+        make_fd_non_blocking(&sock_fd);
       }
     }
 
@@ -228,6 +219,7 @@ bool start_client(const char *ip_addr, uint16_t port) {
         }
         music_playing = true;
       }
+
       if (ppg_screen_refresh(&game, found_player)) goto exit_game;
       switch (key) {
         case 4:
@@ -239,22 +231,24 @@ bool start_client(const char *ip_addr, uint16_t port) {
         default: break;
       }
 
+      if (player == 0 && player_two == 1) ppg_ball_move(&game, 2);
+
       switch (ppg_is_out(&game)) {
         case 1:
-          game.g_data.player[0].points++;
+          // game.player[0].points++;
           player_two_reset(&game);
           player_one_reset(&game);
           break;
         case 2:
-          game.g_data.player[1].points++;
+          // game.player[1].points++;
           player_two_reset(&game);
           player_one_reset(&game);
           break;
         default: break;
       }
 
-      if (game.g_data.player[0].points == MAX_POINTS || game.g_data.player[1].points == MAX_POINTS) {
-        game.g_data.player[0].points = game.g_data.player[1].points = 0;
+      if (game.player[0].points == MAX_POINTS || game.player[1].points == MAX_POINTS) {
+        game.player[0].points = game.player[1].points = 0;
         game_over = true;
         music_playing = false;
         player = player_two = 0xff;
@@ -270,12 +264,12 @@ bool start_client(const char *ip_addr, uint16_t port) {
       }
 
       /* Continue to read until player two connected */
-      if (!found_player && player == 0) {
+      if (!found_player) {
         read(sock_fd, &player_two, sizeof(player_two)); /* Don't check if read call failed */
         found_player = (player_two != 0xff) ? true : false;
       } else {
-        send_info(&sock_fd, &game.g_data);
-        recv_info(&sock_fd, &game.g_data, player);
+        send_info(&sock_fd, &game, player);
+        recv_info(&sock_fd, &game, player);
       }
     }
     ppg_reg_fps();
