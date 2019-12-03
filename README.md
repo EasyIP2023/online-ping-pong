@@ -35,10 +35,10 @@ ninja -C build
 ```
 sudo ninja install -C build
 # Server
-online-ping-pong --port 5001 --server
+online-ping-pong --port 8080 --server
 
 # Client
-online-ping-pong --ip 127.0.0.1 --port 5001 --client
+online-ping-pong --ip 127.0.0.1 --port 8080 --client
 ```
 
 ### Running Test

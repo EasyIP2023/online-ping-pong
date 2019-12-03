@@ -3,8 +3,8 @@
 
 #include <netpong.h>
 
-bool start_server(const char *ip_addr, uint16_t port) {
-  ppg_server_t *server = ppg_create_server(ip_addr, port, 64, 1000);
+bool start_server(uint16_t port) {
+  ppg_server_t *server = ppg_create_server(port, 64, 1000);
   if (!server) {
     ppg_freeup_server(server);
     return false;

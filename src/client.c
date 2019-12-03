@@ -6,6 +6,8 @@
 
 #include <netpong.h>
 
+/* Forget Error Checking in this file */
+
 /**
 * I decided to pass the address of the file descriptor
 * to ensure that the it gets set into non-blocking mode.
@@ -80,8 +82,8 @@ static void update_player(ppg *game, player_t *player, uint8_t p) {
 * player 2 then updates it on their screen
 */
 void recv_info(uint32_t *sock, ppg *game, uint8_t player) {
-	player_t data;
-	read(*sock, &data, sizeof(data));
+  player_t data;
+  read(*sock, &data, sizeof(data));
   switch (player) {
     case 0: update_player(game, &data, 1); break;
     case 1: update_player(game, &data, 0); break;
@@ -91,7 +93,7 @@ void recv_info(uint32_t *sock, ppg *game, uint8_t player) {
 
 /* send struct member data to server */
 void send_info(uint32_t *sock, ppg *game, uint8_t player) {
-	write(*sock, &game->player[player], sizeof(player_t));
+  write(*sock, &game->player[player], sizeof(player_t));
 }
 
 bool start_client(const char *ip_addr, uint16_t port) {
@@ -156,18 +158,21 @@ bool start_client(const char *ip_addr, uint16_t port) {
 
   err = ppg_load_audio(&game, 0, "music/evolution.mp3", PPG_MUSIC);
   if (!err) {
+    ppg_log_me(PPG_DANGER, "Failed!!");
     ppg_freeup_game(&game);
     return false;
   }
 
   err = ppg_load_audio(&game, 1, "music/dreams.mp3", PPG_MUSIC);
   if (!err) {
+    ppg_log_me(PPG_DANGER, "Failed!!");
     ppg_freeup_game(&game);
     return false;
   }
 
   err = ppg_load_audio(&game, 2, "music/mario_jump.wav", PPG_EFFECT);
   if (!err) {
+    ppg_log_me(PPG_DANGER, "Failed!!");
     ppg_freeup_game(&game);
     return false;
   }
@@ -197,27 +202,28 @@ bool start_client(const char *ip_addr, uint16_t port) {
         game_over = false;
         music_playing = false;
         sock_fd = ppg_connect_client(ip_addr, port);
-        if (sock_fd == UINT32_MAX) return false;
-        /* Find out what player you are from the server */
-        if (read(sock_fd, &player, sizeof(player)) == -1) {
-          ppg_log_me(PPG_DANGER, "[x] read: %s", strerror(errno));
-          game_over = true;
-          music_playing = false;
+        if (sock_fd == UINT32_MAX) { continue; } /* Force the next iteration of the loop */
+        else {
+          /* Find out what player you are from the server */
+          if (read(sock_fd, &player, sizeof(player)) == -1) {
+            ppg_log_me(PPG_DANGER, "[x] read: %s", strerror(errno));
+            game_over = true;
+            music_playing = false;
+          }
+          ppg_log_me(PPG_SUCCESS, "connection established, player %u", player);
+          make_fd_non_blocking(&sock_fd);
         }
-        ppg_log_me(PPG_SUCCESS, "connection established, player %u", player);
-        if (player == 1) found_player = true;
-        make_fd_non_blocking(&sock_fd);
       }
     }
 
     /* Actual game */
-    if (!game_over) {
+    if (!game_over && player != 0xff) {
       if (!music_playing) {
+        music_playing = true;
         if (!ppg_play_music(&game, 0, -1)) {
           ppg_freeup_game(&game);
           return false;
         }
-        music_playing = true;
       }
 
       if (ppg_screen_refresh(&game, found_player)) goto exit_game;
@@ -266,7 +272,7 @@ bool start_client(const char *ip_addr, uint16_t port) {
       /* Continue to read until player two connected */
       if (!found_player) {
         read(sock_fd, &player_two, sizeof(player_two)); /* Don't check if read call failed */
-        found_player = (player_two != 0xff) ? true : false;
+        found_player = (player != 0xff && player_two != 0xff) ? true : false;
       } else {
         send_info(&sock_fd, &game, player);
         recv_info(&sock_fd, &game, player);

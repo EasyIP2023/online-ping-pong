@@ -217,7 +217,7 @@ void ppg_freeup_server(ppg_server_t *server) {
   FREE(server);
 }
 
-ppg_server_t *ppg_create_server(const char *ip_addr, uint16_t port, uint32_t max_events, uint32_t max_clients) {
+ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max_clients) {
   ppg_server_t *server = (ppg_server_t *) calloc(sizeof(ppg_server_t), sizeof(ppg_server_t));
   if (!server) {
     ppg_log_me(PPG_DANGER, "[x] calloc ppg_server_t *server failed");
@@ -227,16 +227,16 @@ ppg_server_t *ppg_create_server(const char *ip_addr, uint16_t port, uint32_t max
   init_server_values(server);
 
   /* Configure settings in address struct */
-  struct sockaddr_in server_addr;
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(port);
-  server_addr.sin_addr.s_addr = inet_addr(ip_addr);
-  if (!memset(server_addr.sin_zero, 0, sizeof(server_addr.sin_zero))) {
+  struct sockaddr_in socket_addr;
+  socket_addr.sin_family = AF_INET;
+  socket_addr.sin_port = htons(port);
+  socket_addr.sin_addr.s_addr = htonl(INADDR_ANY); /* Convert from host byte order to network byte order */
+  if (!memset(socket_addr.sin_zero, 0, sizeof(socket_addr.sin_zero))) {
     ppg_log_me(PPG_DANGER, "[x] memset call failed");
     return NULL;
   }
 
-  /* Create TCP socket server */
+  /* Create TCP socket server allows for IPv4 */
   if ((server->sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == UINT32_MAX) {
     ppg_log_me(PPG_DANGER, "[x] socket: %s", strerror(errno));
     return NULL;
@@ -250,8 +250,8 @@ ppg_server_t *ppg_create_server(const char *ip_addr, uint16_t port, uint32_t max
     return NULL;
   }
 
-  /* Bind socket with address struct */
-  if (bind(server->sock_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) == ERR64) {
+  /* Bind socket with information in address struct */
+  if (bind(server->sock_fd, (struct sockaddr *) &socket_addr, sizeof(socket_addr)) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] bind: %s", strerror(errno));
     return NULL;
   }
@@ -340,29 +340,35 @@ bool ppg_epoll_server(ppg_server_t *server, tpool_t *tp) {
 
 uint32_t ppg_connect_client(const char *ip_addr, uint16_t port) {
   uint32_t client_sock = 0;
-  struct sockaddr_in server_addr;
 
-  ALL_UNUSED(ip_addr);
   /* Configure settings in address struct*/
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(port); /* convert short integers to host byte order */
-  server_addr.sin_addr.s_addr = (uint32_t) 0x00000000; // inet_network(ip_addr);
-  if (!memset(server_addr.sin_zero, 0, sizeof (server_addr.sin_zero))) {
+  struct sockaddr_in socket_addr;
+  socket_addr.sin_family = AF_INET;
+  socket_addr.sin_port = htons(port); /* convert short integers to host byte order */
+
+  if (inet_aton(ip_addr, &socket_addr.sin_addr) == 0) {
+    ppg_log_me(PPG_DANGER, "[x] inet_aton call failed");
+    return UINT32_MAX;
+  }
+
+  if (!memset(socket_addr.sin_zero, 0, sizeof(socket_addr.sin_zero))) {
     ppg_log_me(PPG_DANGER, "[x] memset call failed");
     return UINT32_MAX;
   }
 
-  /* Create TCP socket*/
+  /* Create TCP socket, allow for IPv4 */
   if ((client_sock = socket(AF_INET, SOCK_STREAM, 0)) == UINT32_MAX) {
     ppg_log_me(PPG_DANGER, "[x] socket: %s", strerror(errno));
     return UINT32_MAX;
   }
 
-  if (connect(client_sock, (struct sockaddr *) &server_addr, sizeof(server_addr)) == ERR64) {
+  if (connect(client_sock, (const struct sockaddr *) &socket_addr, sizeof(socket_addr)) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] connect: %s", strerror(errno));
     close(client_sock);
     return UINT32_MAX;
   }
+
+  ppg_log_me(PPG_SUCCESS, "successfully connected to the server at %s", ip_addr);
 
   return client_sock;
 }

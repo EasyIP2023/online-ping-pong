@@ -4,7 +4,7 @@
 
 void help_message() {
   fprintf(stdout, "Usage: online-ping-pong [options]\n");
-  fprintf(stdout, "Example: online-ping-pong --ip 127.0.0.1 --port 5001 --server\n");
+  fprintf(stdout, "Example: online-ping-pong --port 5001 --server\n");
   fprintf(stdout, "Options:\n");
   fprintf(stdout, "\t-s, --server\t\t\t Specify that you want the server to start\n");
   fprintf(stdout, "\t-c, --client\t\t\t Specify that you want the client to start\n");
@@ -44,9 +44,9 @@ int main(int argc, char **argv) {
         if (!strcmp(long_options[option_index].name, "server")) {
           port = atoi(opts[1]);
           if (port) {
-            if (!start_server(opts[0], port)) goto exit_game;
+            if (!start_server(port)) goto exit_game;
           } else {
-            fprintf(stdout, "[x] Usage example: online-ping-pong --ip 127.0.0.1 --port 5001 --server \n");
+            fprintf(stdout, "[x] Usage example: online-ping-pong --port 5001 --server \n");
             fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
           }
         }
@@ -66,9 +66,9 @@ int main(int argc, char **argv) {
       case 'p': memcpy(opts[1], optarg, sizeof(opts[1])); break;
       case 's':
         if ((port = atoi(opts[1]))) {
-          if (!start_server(opts[0], port)) goto exit_game;
+          if (!start_server(port)) goto exit_game;
         } else {
-          fprintf(stdout, "[x] usage example: Example: online-ping-pong -p 5001 -i 127.0.0.1 -s\n");
+          fprintf(stdout, "[x] usage example: Example: online-ping-pong -p 5001 -s\n");
           fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
         }
         break;

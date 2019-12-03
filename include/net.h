@@ -8,7 +8,7 @@
 #include <tpool.h>
 #include <net-types.h>
 
-ppg_server_t *ppg_create_server(const char *ip_addr, uint16_t port, uint32_t max_events, uint32_t max_clients);
+ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max_clients);
 void ppg_freeup_server(ppg_server_t *server);
 bool ppg_epoll_server(ppg_server_t *server, tpool_t *tp);
 uint32_t ppg_connect_client(const char *ip_addr, uint16_t port);

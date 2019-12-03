@@ -11,7 +11,7 @@
 #include <log.h>
 #include <stdint.h>
 
-#define FREE(ptr) if (ptr) { free(ptr); ptr = NULL; }
+#define FREE(ptr) { free(ptr); ptr = NULL; }
 
 /*
  * http://efesx.com/2010/07/17/variadic-macro-to-count-number-of-arguments/

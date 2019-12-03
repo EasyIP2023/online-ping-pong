@@ -18,7 +18,7 @@ void worker(void *server, void *arg) {
 }
 
 START_TEST(test_create_serv) {
-  ppg_server_t *server = ppg_create_server("127.0.0.1", 3001, 64, 1000);
+  ppg_server_t *server = ppg_create_server(3001, 64, 1000);
   if (!server) {
     ppg_freeup_server(server);
     ck_abort_msg(NULL);
@@ -55,7 +55,7 @@ START_TEST(test_thread_pool) {
 
 /* This will leave a bunch of client file descriptors open */
 START_TEST(test_create_multiple_games) {
-  ppg_server_t *server = ppg_create_server("127.0.0.1", 5001, 64, 1000);
+  ppg_server_t *server = ppg_create_server(5001, 64, 1000);
   if (!server) {
     ppg_freeup_server(server);
     ck_abort_msg(NULL);
