@@ -6,7 +6,7 @@
 
 #include <netpong.h>
 
-/* Forget Error Checking in this file */
+static const int ERR64 = -1;
 
 /**
 * I decided to pass the address of the file descriptor
@@ -55,9 +55,6 @@ static bool load_display_items(ppg *game) {
 }
 
 static void player_two_reset(ppg *game) {
-  // time_t t;
-  // srand((unsigned) time(&t));
-  // uint8_t ball_dir = rand() % 4;
   ppg_player_init(game, 1, SCREEN_WIDTH - PLAYER_WIDTH, SCREEN_HEIGHT/2);
 }
 
@@ -83,17 +80,18 @@ static void update_player(ppg *game, player_t *player, uint8_t p) {
 */
 void recv_info(uint32_t *sock, ppg *game, uint8_t player) {
   player_t data;
-  read(*sock, &data, sizeof(data));
+  if (read(*sock, &data, sizeof(data)) == ERR64) return;
   switch (player) {
     case 0: update_player(game, &data, 1); break;
     case 1: update_player(game, &data, 0); break;
-    default: break;
+    default: return;
   }
 }
 
 /* send struct member data to server */
-void send_info(uint32_t *sock, ppg *game, uint8_t player) {
-  write(*sock, &game->player[player], sizeof(player_t));
+void send_info(uint32_t *sock, player_t *player) {
+  if (write(*sock, player, sizeof(player_t)) == ERR64)
+    return;
 }
 
 bool start_client(const char *ip_addr, uint16_t port) {
@@ -187,7 +185,14 @@ bool start_client(const char *ip_addr, uint16_t port) {
   /* Game!! Welcome to crazy If Statement Checks */
   while (!ppg_poll_ev(&e, &key)) {
     if (key == EXIT_GAME) goto exit_game;
-    if (key == RET_TO_MENU) { game_over = true; music_playing = false; }
+    if (key == RET_TO_MENU && player != 0xff) { /* reset values */
+      game_over = true;
+      music_playing = false;
+      game.player[player].terminate = true;
+      send_info(&sock_fd, &game.player[player]);
+      player = player_two = 0xff;
+      close(sock_fd);
+    }
 
     if (!game_menu && game_over) {
       if (!music_playing) {
@@ -205,7 +210,7 @@ bool start_client(const char *ip_addr, uint16_t port) {
         if (sock_fd == UINT32_MAX) { continue; } /* Force the next iteration of the loop */
         else {
           /* Find out what player you are from the server */
-          if (read(sock_fd, &player, sizeof(player)) == -1) {
+          if (read(sock_fd, &player, sizeof(player)) == ERR64) {
             ppg_log_me(PPG_DANGER, "[x] read: %s", strerror(errno));
             game_over = true;
             music_playing = false;
@@ -237,16 +242,16 @@ bool start_client(const char *ip_addr, uint16_t port) {
         default: break;
       }
 
-      if (player == 0 && player_two == 1) ppg_ball_move(&game, 2);
+      if (found_player) ppg_ball_move(&game, 2);
 
       switch (ppg_is_out(&game)) {
         case 1:
-          // game.player[0].points++;
+          game.player[1].points++;
           player_two_reset(&game);
           player_one_reset(&game);
           break;
         case 2:
-          // game.player[1].points++;
+          game.player[0].points++;
           player_two_reset(&game);
           player_one_reset(&game);
           break;
@@ -258,8 +263,7 @@ bool start_client(const char *ip_addr, uint16_t port) {
         game_over = true;
         music_playing = false;
         player = player_two = 0xff;
-        player_two_reset(&game);
-        player_one_reset(&game);
+        key = RET_TO_MENU;
       }
 
       if (found_player && !run_once) {
@@ -274,8 +278,9 @@ bool start_client(const char *ip_addr, uint16_t port) {
         read(sock_fd, &player_two, sizeof(player_two)); /* Don't check if read call failed */
         found_player = (player != 0xff && player_two != 0xff) ? true : false;
       } else {
-        send_info(&sock_fd, &game, player);
-        recv_info(&sock_fd, &game, player);
+        recv_info(&sock_fd, &game, player_two);
+        if (game.player[player_two].terminate) key = RET_TO_MENU;
+        send_info(&sock_fd, &game.player[player]);
       }
     }
     ppg_reg_fps();

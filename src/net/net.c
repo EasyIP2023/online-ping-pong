@@ -11,9 +11,10 @@ struct player_redefined {
   uint32_t y_vel;  /* player only has a y velocity */
   uint32_t points;
   rect_t box;
+  bool terminate;
 } player;
 
-static int ERR64 = -1;
+static const int ERR64 = -1;
 
 /**
 * EPOLLIN: Associate a file descriptor for read() operations
@@ -40,17 +41,38 @@ static void init_server_values(ppg_server_t *server) {
   server->clients = NULL;
 }
 
-/* Its 80 bytes becuase that is the sizeof(struct game_data) */
-static void transfer_data(uint32_t input_fd, uint32_t output_fd) {
+static bool read_c_for_term(ppg_server_t *server, uint32_t gn, uint8_t client) {
+  struct player_redefined data;
+  switch (client) {
+    case 1:
+      if (read(server->games[gn].c1.sock_fd, &data, sizeof(data)) == ERR64) break;
+      server->games[gn].c1.terminate = data.terminate;
+      return server->games[gn].c1.terminate;
+    case 2:
+      if (read(server->games[gn].c2.sock_fd, &data, sizeof(data)) == ERR64) break;
+      server->games[gn].c2.terminate = data.terminate;
+      return server->games[gn].c2.terminate;
+    default: break;
+  }
+
+  return false;
+}
+
+static bool transfer_data(uint32_t input_fd, uint32_t output_fd) {
   int read_line = 0;
   struct player_redefined data;
 	while((read_line = read(input_fd, &data, sizeof(data))) > 0) {
     if (write(output_fd, &data, read_line) == EOF) {
       ppg_log_me(PPG_DANGER, "[x] write: %s", strerror(errno));
-      return;
+      return false;
     }
   }
-  if (read_line == -1 && errno != EAGAIN && errno != EWOULDBLOCK) return;
+
+  /* Who cares about errors */
+  if (read_line == ERR64 || errno != EAGAIN || errno != EWOULDBLOCK)
+    return false;
+
+  return true;
 }
 
 /**
@@ -178,28 +200,45 @@ static void play_game(void *serv, void *sock) {
   ppg_server_t *server = (ppg_server_t *) serv;
   uint32_t gn = server->clients[*((uint32_t *) sock)].gn;
 
-	switch (server->games[gn].c1.state) {
-		case ESTABLISHED:
+  switch (server->games[gn].c1.state) {
+    case ESTABLISHED:
       if (server->games[gn].active)
-        transfer_data(server->games[gn].c1.sock_fd, server->games[gn].c2.sock_fd);
+        transfer_data(server->games[gn].c2.sock_fd, server->games[gn].c1.sock_fd);
+
+      /* if signal sent terminate client close FD */
+      if (read_c_for_term(server, gn, 1)) {
+        server->games[gn].c1.state = TERMINATE;
+        return;
+      }
       break;
     case TERMINATE:
       ppg_log_me(PPG_DANGER, "closing client1, socket fd: %u", server->games[gn].c1.sock_fd);
+      server->games[gn].c1.playing = false;
       close(server->games[gn].c1.sock_fd);
+      server->games[gn].c1.state = NEW;
       break;
-		default: break;
+    default: break;
 	}
+
   switch (server->games[gn].c2.state) {
-		case ESTABLISHED:
+    case ESTABLISHED:
       if (server->games[gn].active)
-        transfer_data(server->games[gn].c2.sock_fd, server->games[gn].c1.sock_fd);
+        transfer_data(server->games[gn].c1.sock_fd, server->games[gn].c2.sock_fd);
+
+      /* if signal sent terminate client close FD */
+      if (read_c_for_term(server, gn, 2)) {
+        server->games[gn].c2.state = TERMINATE;
+        return;
+      }
       break;
     case TERMINATE:
       ppg_log_me(PPG_DANGER, "closing client2, socket fd: %u", server->games[gn].c2.sock_fd);
+      server->games[gn].c2.playing = false;
       close(server->games[gn].c2.sock_fd);
+      server->games[gn].c2.state = NEW;
       break;
-		default: break;
-	}
+    default: break;
+  }
 
   if (server->games[gn].c1.state == TERMINATE && server->games[gn].c2.state == TERMINATE) {
     server->games[gn].active = false;
@@ -263,7 +302,11 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
 
   ppg_log_me(PPG_INFO, "Server fd %u is in non-blocking mode", server->sock_fd);
 
-  /* Listen in on server FD, starts server on a port */
+  /**
+  * Set server FD into listening mode
+  * (server FD is connected to a communication endpoint)
+  * listen for connections on a port
+  */
   if (listen(server->sock_fd, max_clients) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] listen: %s", strerror(errno));
     return NULL;
@@ -335,7 +378,7 @@ bool ppg_epoll_server(ppg_server_t *server, tpool_t *tp) {
     }
   }
 
-  return ret;
+  return true;
 }
 
 uint32_t ppg_connect_client(const char *ip_addr, uint16_t port) {

@@ -18,7 +18,7 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 
 ### Online Ping Pong makes full utilization of
 * **SDL2:** For graphics
-* **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established.
+* **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established. Sending exactly 5 bytes of data from client - server - client. The Y position of player and the direction of the ball.
 * **Epoll:** To better manage an array of open file descriptors to see which one is ready for read/write operations.
 * **Non-Blocking I/0:** All fd's are set into non-blocking mode, so that file descriptors don't have to wait for unix/linux system calls like [read(2)](https://linux.die.net/man/2/read)/[write(2)](https://linux.die.net/man/2/write) to finish.
 * **Thread Pool:** Queue's up task/work for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want too many threads blocked becuase of I/O operations, this leaves too many threads idle.
@@ -45,6 +45,9 @@ online-ping-pong --ip 127.0.0.1 --port 8080 --client
 ```
 ninja test -C build/
 ```
+
+### Software Architecture
+![Soft Arch](https://github.com/EasyIP2023/online-ping-pong/blob/master/imgs/software_arch.png)
 
 ### References
 * [Will Usher SDL2 Tutorial](https://www.willusher.io/pages/sdl2/)

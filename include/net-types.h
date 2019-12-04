@@ -19,6 +19,7 @@ typedef struct _ppg_client_t {
   uint32_t sock_fd;
   uint32_t state;
   bool playing;
+  bool terminate;
 } ppg_client_t;
 
 /**

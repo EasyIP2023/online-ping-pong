@@ -26,6 +26,7 @@ typedef struct _player_t {
   uint32_t y_vel;  /* player only has a y velocity */
   uint32_t points;
   SDL_Rect box;
+  bool terminate;
 } player_t;
 
 typedef struct _ppg {

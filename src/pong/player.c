@@ -7,6 +7,7 @@ void ppg_player_init(ppg *game, uint32_t cur_p, uint32_t x, uint32_t y) {
 	game->player[cur_p].box.w = PLAYER_WIDTH;
 	game->player[cur_p].box.h = PLAYER_HEIGHT;
 	game->player[cur_p].y_vel = PLAYER_VELOCITY;
+  game->player[cur_p].terminate = false;
 }
 
 void ppg_player_move_up(ppg *game, uint32_t cur_p) {

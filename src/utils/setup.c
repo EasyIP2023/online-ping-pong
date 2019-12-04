@@ -38,6 +38,7 @@ void ppg_reset_values(ppg *game) {
     game->player[i].box.y = 0;
     game->player[i].box.h = 0;
     game->player[i].box.w = 0;
+    game->player[i].terminate = false;
   }
 }
 
