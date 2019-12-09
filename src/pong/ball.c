@@ -44,6 +44,10 @@ void ppg_ball_move(ppg *game, uint8_t dir) {
       break;
     default: break;
   }
+
+  game->player[0].send.x = game->ball.box.x;
+  game->player[0].send.y = game->ball.box.y;
+
   if (game->ball.box.y < 0)
     game->ball.y_vel = -game->ball.y_vel;
   if ((game->ball.box.y + game->ball.box.h) > SCREEN_HEIGHT)

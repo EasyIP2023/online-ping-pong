@@ -56,6 +56,7 @@ static bool load_display_items(ppg *game) {
 
 static void player_two_reset(ppg *game) {
   ppg_player_init(game, 1, SCREEN_WIDTH - PLAYER_WIDTH, SCREEN_HEIGHT/2);
+  ppg_ball_init(game);
 }
 
 static void player_one_reset(ppg *game) {
@@ -65,7 +66,6 @@ static void player_one_reset(ppg *game) {
 
 static void update_player(ppg *game, player_t *player, uint8_t p) {
   game->player[p].y_vel = player->y_vel;
-  game->player[p].points = player->points;
   game->player[p].box.x = player->box.x;
   game->player[p].box.y = player->box.y;
   game->player[p].box.h = player->box.h;
@@ -78,19 +78,23 @@ static void update_player(ppg *game, player_t *player, uint8_t p) {
 * Ball position is updated and sent to player 2
 * player 2 then updates it on their screen
 */
-void recv_info(uint32_t *sock, ppg *game, uint8_t player) {
+static void recv_data(uint32_t *sock, ppg *game, uint8_t player) {
   player_t data;
   if (read(*sock, &data, sizeof(data)) == ERR64) return;
   switch (player) {
-    case 0: update_player(game, &data, 1); break;
-    case 1: update_player(game, &data, 0); break;
+    case 0: update_player(game, &data, 1); return;
+    case 1:
+      game->ball.box.x = data.send.x;
+      game->ball.box.y = data.send.y;
+      update_player(game, &data, 0);
+      return;
     default: return;
   }
 }
 
 /* send struct member data to server */
-void send_info(uint32_t *sock, player_t *player) {
-  if (write(*sock, player, sizeof(player_t)) == ERR64)
+static void send_data(uint32_t *sock, ppg *game, uint8_t p) {
+  if (write(*sock, &game->player[p], sizeof(player_t)) == ERR64)
     return;
 }
 
@@ -189,17 +193,17 @@ bool start_client(const char *ip_addr, uint16_t port) {
       game_over = true;
       music_playing = false;
       game.player[player].terminate = true;
-      send_info(&sock_fd, &game.player[player]);
+      send_data(&sock_fd, &game, player);
       player = player_two = 0xff;
       close(sock_fd);
     }
 
     if (!game_menu && game_over) {
       if (!music_playing) {
-        if (!ppg_play_music(&game, 1, -1)) {
-          ppg_freeup_game(&game);
-          return false;
-        }
+        // if (!ppg_play_music(&game, 1, -1)) {
+        //   ppg_freeup_game(&game);
+        //   return false;
+        // }
         music_playing = true;
       }
       game_menu = ppg_show_menu(&game, &e, &key);
@@ -223,13 +227,29 @@ bool start_client(const char *ip_addr, uint16_t port) {
 
     /* Actual game */
     if (!game_over && player != 0xff) {
-      if (found_player) ppg_ball_move(&game, 2);
+      if (found_player && !run_once) {
+        player_two_reset(&game);
+        player_one_reset(&game);
+        run_once = true;
+        ppg_log_me(PPG_WARNING, "Start Game");
+      }
+
+      /* Continue to read until player two connected */
+      if (!found_player) {
+        read(sock_fd, &player_two, sizeof(player_two)); /* Don't check if read call failed */
+        found_player = (player != 0xff && player_two != 0xff) ? true : false;
+      } else {
+        recv_data(&sock_fd, &game, player);
+        if (game.player[player_two].terminate) key = RET_TO_MENU;
+        send_data(&sock_fd, &game, player);
+      }
+
       if (!music_playing) {
         music_playing = true;
-        if (!ppg_play_music(&game, 0, -1)) {
-          ppg_freeup_game(&game);
-          return false;
-        }
+        // if (!ppg_play_music(&game, 0, -1)) {
+        //   ppg_freeup_game(&game);
+        //   return false;
+        // }
       }
 
       if (ppg_screen_refresh(&game, found_player)) goto exit_game;
@@ -265,22 +285,7 @@ bool start_client(const char *ip_addr, uint16_t port) {
         key = RET_TO_MENU;
       }
 
-      if (found_player && !run_once) {
-        player_two_reset(&game);
-        player_one_reset(&game);
-        run_once = true;
-        ppg_log_me(PPG_WARNING, "Start Game");
-      }
-
-      /* Continue to read until player two connected */
-      if (!found_player) {
-        read(sock_fd, &player_two, sizeof(player_two)); /* Don't check if read call failed */
-        found_player = (player != 0xff && player_two != 0xff) ? true : false;
-      } else {
-        recv_info(&sock_fd, &game, player);
-        if (game.player[player_two].terminate) key = RET_TO_MENU;
-        send_info(&sock_fd, &game.player[player]);
-      }
+      if (found_player && player == 0) ppg_ball_move(&game, 2);
     }
     ppg_reg_fps();
   }

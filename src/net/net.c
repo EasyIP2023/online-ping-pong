@@ -11,8 +11,11 @@ struct player_redefined {
   uint32_t y_vel;  /* player only has a y velocity */
   uint32_t points;
   rect_t box;
+  struct {
+    int x, y;
+  } recv;
   bool terminate;
-} player;
+};
 
 static const int ERR64 = -1;
 

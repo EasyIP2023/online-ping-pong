@@ -10,7 +10,7 @@ Audio From: https://www.bensound.com
 
 Yes I am aware that I could just use UDP Packets with recvfrom(2)/sendto(2) and have my thread pool watch individual UDP packets, but this is more for representation of how epoll, TCP sockets, and a thread pool can be utilized in such an application.
 
-This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API. This is not a complete implementation, but she works.
+This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API. This is not a complete implementation. Yes she works and yes there is lag!!!
 
 ## Dependencies
 * SDL2
