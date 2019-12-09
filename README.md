@@ -8,6 +8,8 @@ Run times (Just because this was hackishly created):
 
 Audio From: https://www.bensound.com
 
+Yes I am aware that I could just use UDP Packets with recvfrom(2)/sendto(2) and have my thread pool watch individual UDP packets, but this is more for representation of how epoll, TCP sockets, and a thread pool can be utilized in such an application.
+
 This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API. This is not a complete implementation, but she works.
 
 ## Dependencies
@@ -18,7 +20,7 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 
 ### Online Ping Pong makes full utilization of
 * **SDL2:** For graphics
-* **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established. Sending exactly 5 bytes of data from client - server - client. The Y position of player and the direction of the ball.
+* **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established.
 * **Epoll:** To better manage an array of open file descriptors to see which one is ready for read/write operations.
 * **Non-Blocking I/0:** All fd's are set into non-blocking mode, so that file descriptors don't have to wait for unix/linux system calls like [read(2)](https://linux.die.net/man/2/read)/[write(2)](https://linux.die.net/man/2/write) to finish.
 * **Thread Pool:** Queue's up task/work for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want too many threads blocked becuase of I/O operations, this leaves too many threads idle.

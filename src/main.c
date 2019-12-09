@@ -61,10 +61,10 @@ int main(int argc, char **argv) {
         }
         break;
       case 1: break;
-      case 'h': help_message(); break;
-      case 'i': memcpy(opts[0], optarg, sizeof(opts[0])); break;
-      case 'p': memcpy(opts[1], optarg, sizeof(opts[1])); break;
-      case 's':
+      case 104: help_message(); break;
+      case 105: memcpy(opts[0], optarg, sizeof(opts[0])); break;
+      case 112: memcpy(opts[1], optarg, sizeof(opts[1])); break;
+      case 115:
         if ((port = atoi(opts[1]))) {
           if (!start_server(port)) goto exit_game;
         } else {
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
           fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
         }
         break;
-      case 'c':
+      case 99:
         if (opts[0] && (port = atoi(opts[1]))) {
           if (!start_client(opts[0], port)) goto exit_game;
         } else {

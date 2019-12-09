@@ -29,6 +29,18 @@ typedef struct _player_t {
   bool terminate;
 } player_t;
 
+/**
+* (x_vel): ball velocity X
+* (y_vel): ball velocity Y
+* SDL_Rect(box):
+*   (x,y): position cordinate data
+*   (w,h): Width and height of the image
+*/
+typedef struct _ball_t {
+  uint32_t x_vel, y_vel;   /* x and y velocity */
+  SDL_Rect box;
+} ball_t;
+
 typedef struct _ppg {
   SDL_Window *win;
   SDL_Renderer *ren;
@@ -47,19 +59,8 @@ typedef struct _ppg {
     Mix_Music *music;
   } *audio;
 
-  /**
-  * (x_vel): ball velocity X
-  * (y_vel): ball velocity Y
-  * SDL_Rect(box):
-  *   (x,y): postion cordinate data
-  *   (w,h): Width and height of the image
-  */
-  struct _ball {
-    uint32_t x_vel, y_vel;   /* x and y velocity */
-    SDL_Rect box;
-  } ball;
-
   player_t player[2];
+  ball_t ball;
 } ppg;
 
 #endif

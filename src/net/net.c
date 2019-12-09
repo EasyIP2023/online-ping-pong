@@ -47,10 +47,12 @@ static bool read_c_for_term(ppg_server_t *server, uint32_t gn, uint8_t client) {
     case 1:
       if (read(server->games[gn].c1.sock_fd, &data, sizeof(data)) == ERR64) break;
       server->games[gn].c1.terminate = data.terminate;
+      if (write(server->games[gn].c2.sock_fd, &data, sizeof(data)) == ERR64) break;
       return server->games[gn].c1.terminate;
     case 2:
       if (read(server->games[gn].c2.sock_fd, &data, sizeof(data)) == ERR64) break;
       server->games[gn].c2.terminate = data.terminate;
+      if (write(server->games[gn].c1.sock_fd, &data, sizeof(data)) == ERR64) break;
       return server->games[gn].c2.terminate;
     default: break;
   }

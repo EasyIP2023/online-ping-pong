@@ -30,7 +30,7 @@ typedef struct _ppg_client_t {
 * (games_running): Keeps track of number of games currently running
 * (struct games): A server can have multiple games
 *     (c1,c2): How the server keeps track of client data in a single game
-*     (ball): There is a single ball per game, This keeps track of postion data
+*     (ball): There is a single ball per game, This keeps track of position data
 *     (active): Check to see if a game is active or not
 * (struct clients): Keeps track of what client FD's belong to what game
 */
