@@ -10,7 +10,6 @@ struct gdata_redefined {
   struct {
     int x, y;
   } recv_ball;
-  uint32_t points;
   bool terminate;
 };
 

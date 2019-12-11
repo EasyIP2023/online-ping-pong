@@ -94,7 +94,6 @@ static void send_data(uint32_t sock, ppg *game, uint8_t p) {
   gdata_t data;
 
   data.send_ppos.y = game->player[p].box.y;
-  data.points = game->player[p].terminate;
   data.terminate =  game->player[p].terminate;
   if (p == 0) {
     data.send_ball.x = game->ball.box.x;
