@@ -6,9 +6,9 @@
 #define NUM_THREADS 3
 #define NUM_ITEMS 100
 
-void worker(void *server, void *arg) {
-  ppg_server_t *serv = (ppg_server_t *) server;
-  uint32_t *val = (uint32_t *) arg;
+void worker(void *arg1, void *arg2) {
+  ppg_server_t *serv = (ppg_server_t *) arg1;
+  uint32_t *val = (uint32_t *) arg2;
   uint32_t old = *val;
 
   *val += 1000;

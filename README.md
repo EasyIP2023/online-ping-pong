@@ -8,9 +8,11 @@ Run times (Just because this was hackishly created):
 
 Audio From: https://www.bensound.com
 
-Yes I am aware that I could just use UDP Packets with recvfrom(2)/sendto(2) and have my thread pool watch individual UDP packets, but this is more for representation of how epoll, TCP sockets, and a thread pool can be utilized in such an application.
+Yes I am aware that I could just use UDP Packets with [recvfrom(2)](https://linux.die.net/man/2/recvfrom)/[sendto(2)](https://linux.die.net/man/2/sendto) and have my thread pool watch individual UDP packets, but this is more for representation of how epoll, TCP sockets, and a thread pool can be utilized in such a application.
 
-This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API. This is not a complete implementation. Yes she works and yes there is lag!!!
+This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API.
+
+**Yes there is obviously lag!!!*
 
 ## Dependencies
 * SDL2
@@ -20,10 +22,10 @@ This is an online ping pong game written in C for my Graduate Operating Systems 
 
 ### Online Ping Pong makes full utilization of
 * **SDL2:** For graphics
-* **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established.
+* **TCP Sockets:** For connection oriented socket streaming. Need to make sure a game is established. Clients and server read/write exactly 13 bytes of memory. Player y coordinate data, the client termination boolean variable, ball's x and y coordinate data (the initial player updates balls position).
 * **Epoll:** To better manage an array of open file descriptors to see which one is ready for read/write operations.
 * **Non-Blocking I/0:** All fd's are set into non-blocking mode, so that file descriptors don't have to wait for unix/linux system calls like [read(2)](https://linux.die.net/man/2/read)/[write(2)](https://linux.die.net/man/2/write) to finish.
-* **Thread Pool:** Queue's up task/work for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps a little with context switching. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want too many threads blocked becuase of I/O operations, this leaves too many threads idle.
+* **Thread Pool:** Queue's up task/work for threads to execute. I usually like to make the number of threads equal to the same number of CPU Cores - 1 (Main process is a thread). Helps with resource thrashing don't want to waste time in context switching between threads. Also helps with decreasing thread scheduler overhead. The more threads you have the higher the overhead for the thread scheduler is. You also don't want too many threads blocking becuase of I/O operations, this leaves too many threads idle.
 * **If Statements:** Bool functions final returns are not the same, so if statement checks vary from function to function. :stuck_out_tongue_winking_eye: :sweat_smile:
 
 ### Installation/Usage

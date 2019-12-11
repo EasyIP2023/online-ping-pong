@@ -7,13 +7,13 @@ typedef struct _rect_t {
   int x, y, w, h;
 } rect_t;
 
-struct player_redefined {
-  uint32_t y_vel;  /* player only has a y velocity */
-  uint32_t points;
-  rect_t box;
+struct gdata_redefined {
+  struct {
+    int y;
+  } recv_ppos;
   struct {
     int x, y;
-  } recv;
+  } recv_ball;
   bool terminate;
 };
 
@@ -45,7 +45,7 @@ static void init_server_values(ppg_server_t *server) {
 }
 
 static bool read_c_for_term(ppg_server_t *server, uint32_t gn, uint8_t client) {
-  struct player_redefined data;
+  struct gdata_redefined data;
   switch (client) {
     case 1:
       if (read(server->games[gn].c1.sock_fd, &data, sizeof(data)) == ERR64) break;
@@ -65,7 +65,7 @@ static bool read_c_for_term(ppg_server_t *server, uint32_t gn, uint8_t client) {
 
 static bool transfer_data(uint32_t input_fd, uint32_t output_fd) {
   int read_line = 0;
-  struct player_redefined data;
+  struct gdata_redefined data;
 	while((read_line = read(input_fd, &data, sizeof(data))) > 0) {
     if (write(output_fd, &data, read_line) == EOF) {
       ppg_log_me(PPG_DANGER, "[x] write: %s", strerror(errno));

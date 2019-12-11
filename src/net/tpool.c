@@ -15,8 +15,8 @@
 */
 typedef struct _tpool_work_t tpool_work_t;
 struct _tpool_work_t {
-  void *server;
-  void *arg;
+  void *arg1;
+  void *arg2;
   thread_func_t func;
   tpool_work_t *next;
 };
@@ -44,7 +44,7 @@ struct _tpool_t {
 };
 
 /* Create worker helper */
-static tpool_work_t *tpool_work_create(thread_func_t func, void *server, void *arg) {
+static tpool_work_t *tpool_work_create(thread_func_t func, void *arg1, void *arg2) {
   tpool_work_t *work = NULL;
 
   if (func == NULL) return NULL;
@@ -56,8 +56,8 @@ static tpool_work_t *tpool_work_create(thread_func_t func, void *server, void *a
   }
 
   work->func = func;
-  work->arg  = arg;
-  work->server = server;
+  work->arg1 = arg1;
+  work->arg2 = arg2;
   work->next = NULL;
 
   return work;
@@ -120,7 +120,7 @@ static void *tpool_worker(void *arg) {
     pthread_mutex_unlock(&tp->mux);
 
     if (work) {
-      work->func(work->server, work->arg);
+      work->func(work->arg1, work->arg2);
       tpool_work_destroy(work);
     }
 
@@ -176,12 +176,12 @@ tpool_t *ppg_tpool_create(uint32_t num) {
 * First by creating a work object
 * Locking the mutex and adding the object to the liked list
 */
-bool ppg_tpool_add_work(tpool_t *tp, thread_func_t func, void *server, void *arg) {
+bool ppg_tpool_add_work(tpool_t *tp, thread_func_t func, void *arg1, void *arg2) {
   tpool_work_t *work = NULL;
 
   if (!tp) return false;
 
-  work = tpool_work_create(func, server, arg);
+  work = tpool_work_create(func, arg1, arg2);
   if (!work) {
     ppg_log_me(PPG_DANGER, "[x] tpool_work_create failed");
     return false;

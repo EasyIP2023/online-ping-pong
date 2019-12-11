@@ -5,11 +5,11 @@
 
 typedef struct _tpool_t tpool_t;
 
-typedef void (*thread_func_t)(void *server, void *arg);
+typedef void (*thread_func_t)(void *arg1, void *arg2);
 
 tpool_t *ppg_tpool_create(uint32_t num);
 void ppg_tpool_wait(tpool_t *tp);
-bool ppg_tpool_add_work(tpool_t *tp, thread_func_t func, void *server, void *arg);
+bool ppg_tpool_add_work(tpool_t *tp, thread_func_t func, void *arg1, void *arg2);
 void ppg_freeup_tpool(tpool_t *tp);
 
 #endif
