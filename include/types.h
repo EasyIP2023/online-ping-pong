@@ -48,6 +48,7 @@ typedef struct _gdata_t {
   struct {
     int x, y;
   } send_ball;
+  uint32_t points;
   bool terminate;
 } gdata_t;
 

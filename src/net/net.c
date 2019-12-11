@@ -3,10 +3,6 @@
 #include <sys/epoll.h>
 #include <net.h>
 
-typedef struct _rect_t {
-  int x, y, w, h;
-} rect_t;
-
 struct gdata_redefined {
   struct {
     int y;
@@ -14,6 +10,7 @@ struct gdata_redefined {
   struct {
     int x, y;
   } recv_ball;
+  uint32_t points;
   bool terminate;
 };
 
@@ -50,12 +47,10 @@ static bool read_c_for_term(ppg_server_t *server, uint32_t gn, uint8_t client) {
     case 1:
       if (read(server->games[gn].c1.sock_fd, &data, sizeof(data)) == ERR64) break;
       server->games[gn].c1.terminate = data.terminate;
-      if (write(server->games[gn].c2.sock_fd, &data, sizeof(data)) == ERR64) break;
       return server->games[gn].c1.terminate;
     case 2:
       if (read(server->games[gn].c2.sock_fd, &data, sizeof(data)) == ERR64) break;
       server->games[gn].c2.terminate = data.terminate;
-      if (write(server->games[gn].c1.sock_fd, &data, sizeof(data)) == ERR64) break;
       return server->games[gn].c2.terminate;
     default: break;
   }
@@ -83,19 +78,19 @@ static bool transfer_data(uint32_t input_fd, uint32_t output_fd) {
 /**
 * I decided to pass the address of the file descriptor
 * to ensure that the it gets set into non-blocking mode.
-* If I am not mistaken one doesn't need to do that, just
-* needs to pass the file descriptor.
+* One does not need to do that, just needs to pass the
+* file descriptor. (unique number that ids an open file)
 */
 static bool make_fd_non_blocking(uint32_t *fd) {
   int flags;
 
   /* Save the current flags */
-  if ((flags = fcntl(*fd, F_GETFL, 0)) == -1) {
+  if ((flags = fcntl(*fd, F_GETFL, 0)) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] fcntl(F_GETFL): %s", strerror(errno));
     return false;
   }
 
-  if (fcntl(*fd, F_SETFL, flags |= O_NONBLOCK) == -1) {
+  if (fcntl(*fd, F_SETFL, flags |= O_NONBLOCK) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] fcntl(F_SETFL): %s", strerror(errno));
     return false;
   }
@@ -201,6 +196,15 @@ static bool accept_client(tpool_t *tp, ppg_server_t *server, uint32_t *cur_game)
   return false;
 }
 
+static void close_game(ppg_server_t *server, uint32_t gn) {
+  if (server->games[gn].c1.state == TERMINATE && server->games[gn].c2.state == TERMINATE) {
+    server->games[gn].active = false;
+    server->games_running--;
+    ppg_log_me(PPG_DANGER, "ending game %u", gn);
+    return;
+  }
+}
+
 static void play_game(void *serv, void *sock) {
   ppg_server_t *server = (ppg_server_t *) serv;
   uint32_t gn = server->clients[*((uint32_t *) sock)].gn;
@@ -221,8 +225,9 @@ static void play_game(void *serv, void *sock) {
       server->games[gn].c1.playing = false;
       close(server->games[gn].c1.sock_fd);
       server->games[gn].c1.state = NEW;
+      close_game(server, gn);
       break;
-    default: break;
+    default: return;
 	}
 
   switch (server->games[gn].c2.state) {
@@ -241,13 +246,9 @@ static void play_game(void *serv, void *sock) {
       server->games[gn].c2.playing = false;
       close(server->games[gn].c2.sock_fd);
       server->games[gn].c2.state = NEW;
+      close_game(server, gn);
       break;
-    default: break;
-  }
-
-  if (server->games[gn].c1.state == TERMINATE && server->games[gn].c2.state == TERMINATE) {
-    server->games[gn].active = false;
-    server->games_running--;
+    default: return;
   }
 }
 

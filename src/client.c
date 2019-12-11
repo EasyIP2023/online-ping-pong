@@ -11,19 +11,19 @@ static const int ERR64 = -1;
 /**
 * I decided to pass the address of the file descriptor
 * to ensure that the it gets set into non-blocking mode.
-* If I am not mistaken one doesn't need to do that, just
-* needs to pass the file descriptor.
+* One does not need to do that, just needs to pass the
+* file descriptor (unique number that ids an open file)
 */
 static bool make_fd_non_blocking(uint32_t *fd) {
   int flags;
 
   /* Save the current flags */
-  if ((flags = fcntl(*fd, F_GETFL, 0)) == -1) {
+  if ((flags = fcntl(*fd, F_GETFL, 0)) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] fcntl(F_GETFL): %s", strerror(errno));
     return false;
   }
 
-  if (fcntl(*fd, F_SETFL, flags |= O_NONBLOCK) == -1) {
+  if (fcntl(*fd, F_SETFL, flags |= O_NONBLOCK) == ERR64) {
     ppg_log_me(PPG_DANGER, "[x] fcntl(F_SETFL): %s", strerror(errno));
     return false;
   }
@@ -77,11 +77,13 @@ static void recv_data(uint32_t sock, ppg *game, uint8_t player) {
   switch (player) {
     case 0:
       game->player[1].box.y = data.send_ppos.y;
+      game->player[1].terminate = data.terminate;
       break;
     case 1:
       game->ball.box.x = data.send_ball.x;
       game->ball.box.y = data.send_ball.y;
       game->player[0].box.y = data.send_ppos.y;
+      game->player[0].terminate = data.terminate;
       break;
     default: return;
   }
@@ -92,6 +94,7 @@ static void send_data(uint32_t sock, ppg *game, uint8_t p) {
   gdata_t data;
 
   data.send_ppos.y = game->player[p].box.y;
+  data.points = game->player[p].terminate;
   data.terminate =  game->player[p].terminate;
   if (p == 0) {
     data.send_ball.x = game->ball.box.x;
@@ -203,10 +206,10 @@ bool start_client(const char *ip_addr, uint16_t port) {
 
     if (!game_menu && game_over) {
       if (!music_playing) {
-        // if (!ppg_play_music(&game, 1, -1)) {
-        //   ppg_freeup_game(&game);
-        //   return false;
-        // }
+        if (!ppg_play_music(&game, 1, -1)) {
+          ppg_freeup_game(&game);
+          return false;
+        }
         music_playing = true;
       }
       game_menu = ppg_show_menu(&game, &e, &key);
@@ -223,7 +226,7 @@ bool start_client(const char *ip_addr, uint16_t port) {
             music_playing = false;
           }
           ppg_log_me(PPG_SUCCESS, "connection established, player %u", player);
-          make_fd_non_blocking(&sock_fd);
+          if (!make_fd_non_blocking(&sock_fd)) return false;
         }
       }
     }
@@ -249,10 +252,10 @@ bool start_client(const char *ip_addr, uint16_t port) {
 
       if (!music_playing) {
         music_playing = true;
-        // if (!ppg_play_music(&game, 0, -1)) {
-        //   ppg_freeup_game(&game);
-        //   return false;
-        // }
+        if (!ppg_play_music(&game, 0, -1)) {
+          ppg_freeup_game(&game);
+          return false;
+        }
       }
 
       if (ppg_screen_refresh(&game, found_player)) goto exit_game;
@@ -267,14 +270,13 @@ bool start_client(const char *ip_addr, uint16_t port) {
       }
 
       /* constantly send balls new position */
-      if (found_player && player == 0)
+      if (found_player && player == 0) {
         ppg_ball_move(&game, 2);
+        send_data(sock_fd, &game, player);
+      }
 
       /* constantly send/recv balls new position */
       if (found_player) {
-        send_data(sock_fd, &game, player);
-        recv_data(sock_fd, &game, player);
-
         switch (ppg_is_out(&game)) {
           case 1:
             game.player[1].points++;
