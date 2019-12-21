@@ -51,7 +51,7 @@ static tpool_work_t *tpool_work_create(thread_func_t func, void *arg1, void *arg
 
   work = calloc(sizeof(tpool_work_t), sizeof(tpool_work_t));
   if (!work) {
-    ppg_log_me(PPG_DANGER, "[x] calloc tpool_work_t *work failed");
+    ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno));
     return NULL;
   }
 
@@ -150,7 +150,7 @@ tpool_t *ppg_tpool_create(uint32_t num) {
 
   tp = calloc(sizeof(tpool_t), sizeof(tpool_t));
   if (!tp) {
-    ppg_log_me(PPG_DANGER, "[x] calloc tpool_t *tp failed");
+    ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno));
     return NULL;
   }
 

@@ -264,7 +264,7 @@ void ppg_freeup_server(ppg_server_t *server) {
 ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max_clients) {
   ppg_server_t *server = (ppg_server_t *) calloc(sizeof(ppg_server_t), sizeof(ppg_server_t));
   if (!server) {
-    ppg_log_me(PPG_DANGER, "[x] calloc ppg_server_t *server failed");
+    ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno));
     return NULL;
   }
 
@@ -320,9 +320,9 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
   ppg_log_me(PPG_SUCCESS, "Now listening for connections on port %u", port);
 
   /* Can have 2 clients per game */
-  server->games = (struct _games *) calloc(sizeof(struct _games), (max_clients/2) * sizeof(struct _games));
+  server->games = (struct _games *) calloc((max_clients/2) * sizeof(struct _games), sizeof(struct _games));
   if (!server->games) {
-    ppg_log_me(PPG_DANGER, "[x] calloc struct _games *games failed");
+    ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno));
     return NULL;
   }
 
@@ -335,15 +335,15 @@ ppg_server_t *ppg_create_server(uint16_t port, uint32_t max_events, uint32_t max
   ppg_log_me(PPG_SUCCESS, "epoll_create1(0) succeded");
 
   server->max_evs = max_events * max_clients;
-  server->events = (struct epoll_event *) calloc(sizeof(struct epoll_event), server->max_evs * sizeof(struct epoll_event));
+  server->events = (struct epoll_event *) calloc(server->max_evs * sizeof(struct epoll_event), sizeof(struct epoll_event));
   if (!server->events) {
-    ppg_log_me(PPG_DANGER, "[x] calloc struct epoll_event *events failed");
+    ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno));
     return NULL;
   }
 
-  server->clients = (struct _clients *) calloc(sizeof(struct _clients), server->max_evs * sizeof(struct _clients));
+  server->clients = (struct _clients *) calloc(server->max_evs * sizeof(struct _clients), sizeof(struct _clients));
   if (!server->clients) {
-    ppg_log_me(PPG_DANGER, "[x] calloc struct epoll_event *events failed");
+    ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno));
     return NULL;
   }
 

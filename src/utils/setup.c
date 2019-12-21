@@ -88,15 +88,15 @@ bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
   switch (type) {
     case PPG_TEXTURE:
       game->di_size = size;
-      game->display_items = (struct _display_item *) calloc(sizeof(struct _display_item), size * sizeof(struct _display_item));
+      game->display_items = (struct _display_item *) calloc(size * sizeof(struct _display_item), sizeof(struct _display_item));
       if (game->display_items) { init_texture_data(game); return false; }
-      else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }
+      else { ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno)); return false; }
       return true;
     case PPG_AUDIO:
       game->asize = size;
-      game->audio = (struct _audio *) calloc(sizeof(struct _audio), size * sizeof(struct _audio));
+      game->audio = (struct _audio *) calloc(size * sizeof(struct _audio), sizeof(struct _audio));
       if (game->audio) { init_audio_data(game); return false; }
-      else { ppg_log_me(PPG_DANGER, "[x] calloc failed"); return false; }
+      else { ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno)); return false; }
       return true;
     default:
       ppg_log_me(PPG_DANGER, "Type not defined");

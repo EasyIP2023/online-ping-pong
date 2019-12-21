@@ -10,6 +10,7 @@
 #include <time.h>
 #include <log.h>
 #include <stdint.h>
+#include <errno.h>
 
 #define FREE(ptr) { free(ptr); ptr = NULL; }
 
