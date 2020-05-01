@@ -1,5 +1,3 @@
-#include <fcntl.h>
-
 #include <common.h>
 #include <netpong.h>
 #include <getopt.h>
