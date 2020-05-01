@@ -43,6 +43,7 @@ void ppg_reset_values(ppg *game) {
 }
 
 void ppg_freeup_game(ppg *game) {
+
   if (game->display_items) {
     for (uint32_t i = 0; i < game->di_size; i++) {
       if (game->display_items[i].tex) {
@@ -60,6 +61,7 @@ void ppg_freeup_game(ppg *game) {
     }
     FREE(game->display_items);
   }
+
   if (game->audio) {
     for (uint32_t i = 0; i < game->asize; i++) {
       if (game->audio[i].music) {
@@ -73,28 +75,30 @@ void ppg_freeup_game(ppg *game) {
     }
     FREE(game->audio);
   }
+
   if (game->ren)
     SDL_DestroyRenderer(game->ren);
+
   if (game->win)
     SDL_DestroyWindow(game->win);
+
   Mix_CloseAudio();
   TTF_Quit();
   IMG_Quit();
   SDL_Quit();
-  ppg_reset_values(game);
 }
 
 bool ppg_otba(ppg *game, uint32_t size, otba_types type) {
   switch (type) {
     case PPG_TEXTURE:
       game->di_size = size;
-      game->display_items = (struct _display_item *) calloc(size * sizeof(struct _display_item), sizeof(struct _display_item));
+      game->display_items = (struct _display_item *) calloc(size, sizeof(struct _display_item));
       if (game->display_items) { init_texture_data(game); return false; }
       else { ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno)); return false; }
       return true;
     case PPG_AUDIO:
       game->asize = size;
-      game->audio = (struct _audio *) calloc(size * sizeof(struct _audio), sizeof(struct _audio));
+      game->audio = (struct _audio *) calloc(size, sizeof(struct _audio));
       if (game->audio) { init_audio_data(game); return false; }
       else { ppg_log_me(PPG_DANGER, "[x] calloc: %s", strerror(errno)); return false; }
       return true;

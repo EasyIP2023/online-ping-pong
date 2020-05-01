@@ -14,6 +14,10 @@
 
 #define FREE(ptr) { free(ptr); ptr = NULL; }
 
+#define ERR64 -1
+#define CLIENT_TERMINATE -999
+#define SERVER_TERMINATE -998
+
 /*
  * http://efesx.com/2010/07/17/variadic-macro-to-count-number-of-arguments/
  * https://stackoverflow.com/questions/23235910/variadic-unused-function-macro

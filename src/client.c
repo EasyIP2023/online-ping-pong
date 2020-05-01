@@ -1,35 +1,8 @@
-#include <fcntl.h>
-
 #include <common.h>
 #include <ppg.h>
 #include <net.h>
 
 #include <netpong.h>
-
-static const int ERR64 = -1;
-
-/**
-* I decided to pass the address of the file descriptor
-* to ensure that the it gets set into non-blocking mode.
-* One does not need to do that, just needs to pass the
-* file descriptor (unique number that ids an open file)
-*/
-static bool make_fd_non_blocking(uint32_t *fd) {
-  int flags;
-
-  /* Save the current flags */
-  if ((flags = fcntl(*fd, F_GETFL, 0)) == ERR64) {
-    ppg_log_me(PPG_DANGER, "[x] fcntl(F_GETFL): %s", strerror(errno));
-    return false;
-  }
-
-  if (fcntl(*fd, F_SETFL, flags |= O_NONBLOCK) == ERR64) {
-    ppg_log_me(PPG_DANGER, "[x] fcntl(F_SETFL): %s", strerror(errno));
-    return false;
-  }
-
-  return true;
-}
 
 static bool load_display_items(ppg *game) {
   bool err = false;
@@ -224,8 +197,10 @@ bool start_client(const char *ip_addr, uint16_t port) {
             game_over = true;
             music_playing = false;
           }
+
+          /* Doing so allows me not to have to create two seperate processes, input_handler & output_handler */
+          if (!make_fd_non_blocking(sock_fd)) return false;
           ppg_log_me(PPG_SUCCESS, "connection established, player %u", player);
-          if (!make_fd_non_blocking(&sock_fd)) return false;
         }
       }
     }

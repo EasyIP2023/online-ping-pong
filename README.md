@@ -10,7 +10,7 @@ Audio From: https://www.bensound.com
 
 **Note: This is more for proof of concept**
 
-Yes I am aware that I could just use UDP Packets with [recvfrom(2)](https://linux.die.net/man/2/recvfrom)/[sendto(2)](https://linux.die.net/man/2/sendto) and have my thread pool watch individual UDP packets, but this is more for representation of how epoll, TCP sockets, and a thread pool can be utilized in such a application.
+Yes I am aware that I could just use UDP Packets with [recvfrom(2)](https://linux.die.net/man/2/recvfrom)/[sendto(2)](https://linux.die.net/man/2/sendto) and have my thread pool watch individual UDP packets, but **this is more for representation** of how epoll, TCP sockets, multiple processes, and a thread pool can be utilized in such a application.
 
 This is an online ping pong game written in C for my Graduate Operating Systems course at the University of Texas at San Antonio. No I am not using [lucurious](https://github.com/EasyIP2023/lucurious) or [Vulkan](https://www.khronos.org/vulkan/) as I am still learning Vulkan and still writing lucurious. Plus I read that SDL is a simple to learn and use API.
 

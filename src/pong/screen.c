@@ -43,12 +43,15 @@ static bool font(ppg *game, uint32_t cur_di, const char *path, int font_size) {
   return true;
 }
 
+/**
+* Wanted font updating to work with my rendering target
+* So I decided to create a surface from the font and message
+* Create a texture from that surface
+* Copy texture to the current rendering target
+*/
 static bool ppg_render_texture_text(ppg *game, uint32_t cur_di, SDL_Rect *dst, const char *msg) {
   bool ret = false;
-  /**
-  * We need to first render to a surface as that's what TTF_RenderText
-  * returns, then load that surface into a texture
-  */
+
   game->display_items[cur_di].surf = TTF_RenderText_Blended(game->display_items[cur_di].font, msg, game->display_items[cur_di].color);
   if (!game->display_items[cur_di].surf){
     ppg_log_me(PPG_DANGER, "[x] TTF_RenderText_Blended failed, Error: %s", TTF_GetError());
@@ -64,7 +67,6 @@ static bool ppg_render_texture_text(ppg *game, uint32_t cur_di, SDL_Rect *dst, c
   SDL_FreeSurface(game->display_items[cur_di].surf);
   game->display_items[cur_di].surf = NULL;
 
-  /* Copy a portion of the texture to the current rendering target. */
   ret = SDL_RenderCopy(game->ren, game->display_items[cur_di].tex, NULL, dst);
   if (ret) {
     ppg_log_me(PPG_DANGER, "[x] SDL_CreateTextureFromSurface failed, Error: %s", SDL_GetError());
@@ -94,7 +96,7 @@ bool ppg_load_display_item(ppg *game, const char *fmt, ...) {
   int font_size = 0;
 
   va_start(ap, fmt);
-  while (*fmt) {
+  while (*fmt) { /* Leave this way no need to add visibility brackets {} */
     /* possible becuase the location that fmt points to is read only */
     switch (*fmt++) {
       case 'i': cur_di = (int) va_arg(ap, int); break;

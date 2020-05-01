@@ -1,8 +1,10 @@
+#include <fcntl.h>
+
 #include <common.h>
 #include <netpong.h>
 #include <getopt.h>
 
-void help_message() {
+static void help_message() {
   fprintf(stdout, "Usage: online-ping-pong [options]\n");
   fprintf(stdout, "Example: online-ping-pong --port 5001 --server\n");
   fprintf(stdout, "Options:\n");
@@ -18,7 +20,6 @@ int main(int argc, char **argv) {
   int8_t track = 0;
   uint16_t port = 0;
   char opts[2][15];
-  memset(opts, 0, sizeof(opts));
 
   while (1) {
     int option_index = 0;
@@ -27,12 +28,12 @@ int main(int argc, char **argv) {
       {"help",   no_argument,       0,  0  },
       {"server", no_argument,       0,  0  },
       {"client", no_argument,       0,  0  },
-      {"port",   required_argument, 0,  0 },
-      {"ip",     required_argument, 0,  0 },
+      {"port",   required_argument, 0,  0  },
+      {"ip",     required_argument, 0,  0  },
       {0,        0,                 0,  0  }
     };
 
-    c = getopt_long(argc, argv, "hscp:i:", long_options, &option_index);
+    c = getopt_long(argc, argv, "p:i:hsc", long_options, &option_index);
     if (c == UINT32_MAX) goto exit_game;
     track++;
 
@@ -41,22 +42,28 @@ int main(int argc, char **argv) {
         if (!strcmp(long_options[option_index].name, "help")) { help_message(); goto exit_game; }
         if (!strcmp(long_options[option_index].name, "ip")) memcpy(opts[0], optarg, sizeof(opts[0]));
         if (!strcmp(long_options[option_index].name, "port")) memcpy(opts[1], optarg, sizeof(opts[1]));
+
+        /* Specify if it's a client or server last as you need to retrieve the other flags before executing */
         if (!strcmp(long_options[option_index].name, "server")) {
           port = atoi(opts[1]);
           if (port) {
             if (!start_server(port)) goto exit_game;
           } else {
-            fprintf(stdout, "[x] Usage example: online-ping-pong --port 5001 --server \n");
-            fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
+            ppg_log_me(PPG_DANGER, "[x] Usage Example: online-ping-pong --port 5001 --server \n");
+            ppg_log_me(PPG_DANGER, "[x] Be sure to specify whether it's a client or server last\n");
+            exit(0);
           }
         }
+
+        /* Specify if it's a client or server last as you need to retrieve the other flags before executing */
         if (!strcmp(long_options[option_index].name, "client")) {
           uint16_t port = atoi(opts[1]);
           if (opts[0] && port) {
             if (!start_client(opts[0], port)) goto exit_game;
           } else {
-            fprintf(stdout, "[x] usage example: Example: online-ping-pong --ip 8.8.8.8 --port 5001 --client\n");
-            fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
+            ppg_log_me(PPG_DANGER, "[x] Usage Example: online-ping-pong --ip 8.8.8.8 --port 5001 --client");
+            ppg_log_me(PPG_DANGER, "[x] Be sure to specify whether it's a client or server last");
+            exit(0);
           }
         }
         break;
@@ -64,20 +71,22 @@ int main(int argc, char **argv) {
       case 104: help_message(); break;
       case 105: memcpy(opts[0], optarg, sizeof(opts[0])); break;
       case 112: memcpy(opts[1], optarg, sizeof(opts[1])); break;
-      case 115:
+      case 115: /* Specify if it's a client or server last as you need to retrieve the other flags before executing */
         if ((port = atoi(opts[1]))) {
           if (!start_server(port)) goto exit_game;
         } else {
-          fprintf(stdout, "[x] usage example: Example: online-ping-pong -p 5001 -s\n");
-          fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
+          ppg_log_me(PPG_DANGER, "[x] Usage Example: online-ping-pong -p 5001 -s");
+          ppg_log_me(PPG_DANGER, "[x] Be sure to specify whether it's a client or server last");
+          exit(0);
         }
         break;
-      case 99:
+      case 99: /* Specify if it's a client or server last as you need to retrieve the other flags before executing */
         if (opts[0] && (port = atoi(opts[1]))) {
           if (!start_client(opts[0], port)) goto exit_game;
         } else {
-          fprintf(stdout, "[x] usage example: Example: online-ping-pong -i 127.0.0.1 -p 5001 -c\n");
-          fprintf(stdout, "[x] Be sure to specify whether it's a client or server last\n");
+          ppg_log_me(PPG_DANGER, "[x] usage example: Example: online-ping-pong -i 127.0.0.1 -p 5001 -c");
+          ppg_log_me(PPG_DANGER, "[x] Be sure to specify whether it's a client or server last");
+          exit(0);
         }
         break;
       default: fprintf(stdout, "[x] getopt returned character code 0%o ??\n", c); break;
